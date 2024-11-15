@@ -145,6 +145,12 @@ export const iconPaths = {
   'core/chat/sideLine': () => import('./icons/core/chat/sideLine.svg'),
   'core/chat/speaking': () => import('./icons/core/chat/speaking.svg'),
   'core/chat/stopSpeech': () => import('./icons/core/chat/stopSpeech.svg'),
+  'core/chat/car': () => import('./icons/core/chat/car.svg'),
+  'core/chat/policy': () => import('./icons/core/chat/policy.svg'),
+  'core/chat/apply': () => import('./icons/core/chat/apply.svg'),
+  'core/chat/applyQuery': () => import('./icons/core/chat/applyQuery.svg'),
+  'core/chat/ADSelfService': () => import('./icons/core/chat/ADSelfService.svg'),
+  'core/chat/refresh': () => import('./icons/core/chat/refresh.svg'),
   'core/dataset/commonDataset': () => import('./icons/core/dataset/commonDataset.svg'),
   'core/dataset/commonDatasetColor': () => import('./icons/core/dataset/commonDatasetColor.svg'),
   'core/dataset/commonDatasetOutline': () =>
@@ -228,6 +234,8 @@ export const iconPaths = {
     import('./icons/core/workflow/template/datasetSearch.svg'),
   'core/workflow/template/datasource': () =>
     import('./icons/core/workflow/template/datasource.svg'),
+  'core/workflow/template/historyToFile': () =>
+    import('./icons/core/workflow/template/historyToFile.svg'),
   'core/workflow/template/duckduckgo': () =>
     import('./icons/core/workflow/template/duckduckgo.svg'),
   'core/workflow/template/extractJson': () =>

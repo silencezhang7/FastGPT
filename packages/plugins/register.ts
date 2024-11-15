@@ -28,7 +28,8 @@ const packagePluginList = [
   'drawing',
   'drawing/baseChart',
   'wiki',
-  'databaseConnection'
+  'databaseConnection',
+  'historyToFile'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];

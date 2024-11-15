@@ -70,6 +70,7 @@ import { mergeChatResponseData } from '@fastgpt/global/core/chat/utils';
 import { formatTimeToChatItemTime } from '@fastgpt/global/common/string/time';
 import dayjs from 'dayjs';
 import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
+import ChatDecorate from '@/components/ChatDecorate';
 
 const ResponseTags = dynamic(() => import('./components/ResponseTags'));
 const FeedbackModal = dynamic(() => import('./components/FeedbackModal'));
@@ -1027,11 +1028,21 @@ const ChatBox = (
     variableList?.length,
     welcomeText
   ]);
-
+  const setChatInput = (text: string) => {
+    resetInputVal({
+      text: text,
+      files: []
+    });
+    sendPrompt({
+      text,
+      files: []
+    });
+  };
   return (
     <Flex flexDirection={'column'} h={'100%'} position={'relative'}>
       <Script src={getWebReqUrl('/js/html2pdf.bundle.min.js')} strategy="lazyOnload"></Script>
       {/* chat box container */}
+      {chatHistories.length <= 0 && <ChatDecorate onSetChatInput={setChatInput} />}
       {RenderRecords}
       {/* message input */}
       {onStartChat && chatStarted && active && appId && !isInteractive && (
