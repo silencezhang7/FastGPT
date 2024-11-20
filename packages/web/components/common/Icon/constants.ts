@@ -104,6 +104,7 @@ export const iconPaths = {
   'core/app/simpleMode/chat': () => import('./icons/core/app/simpleMode/chat.svg'),
   'core/app/simpleMode/dataset': () => import('./icons/core/app/simpleMode/dataset.svg'),
   'core/app/simpleMode/file': () => import('./icons/core/app/simpleMode/file.svg'),
+  'core/app/simpleMode/chatHeader': () => import('./icons/core/app/simpleMode/chatHeader.svg'),
   'core/app/simpleMode/template': () => import('./icons/core/app/simpleMode/template.svg'),
   'core/app/simpleMode/tts': () => import('./icons/core/app/simpleMode/tts.svg'),
   'core/app/simpleMode/variable': () => import('./icons/core/app/simpleMode/variable.svg'),

@@ -17,6 +17,7 @@ export const chatConfigType = {
   scheduledTriggerConfig: Object,
   chatInputGuide: Object,
   fileSelectConfig: Object,
+  chatDecorateConfig: Object,
   instruction: String
 };
 

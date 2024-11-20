@@ -177,7 +177,8 @@ const ChatBox = (
     chatHistories,
     setChatHistories,
     variablesForm,
-    isChatting
+    isChatting,
+    chatDecorateConfig
   } = useContextSelector(ChatBoxContext, (v) => v);
 
   // Workflow running, there are user input or selection
@@ -1042,7 +1043,9 @@ const ChatBox = (
     <Flex flexDirection={'column'} h={'100%'} position={'relative'}>
       <Script src={getWebReqUrl('/js/html2pdf.bundle.min.js')} strategy="lazyOnload"></Script>
       {/* chat box container */}
-      {chatHistories.length <= 0 && <ChatDecorate onSetChatInput={setChatInput} />}
+      {chatHistories.length <= 0 && (
+        <ChatDecorate onSetChatInput={setChatInput} chatDecorateConfig={chatDecorateConfig} />
+      )}
       {RenderRecords}
       {/* message input */}
       {onStartChat && chatStarted && active && appId && !isInteractive && (

@@ -22,6 +22,7 @@ import FileSelect from '@/components/core/app/FileSelect';
 import { FlowNodeTypeEnum } from '@fastgpt/global/core/workflow/node/constant';
 import { userFilesInput } from '@fastgpt/global/core/workflow/template/system/workflowStart';
 import Container from '../components/Container';
+import ChatDecorateSelect from '@/components/ChatDecorate/components/ChatDecorateSelect';
 
 type ComponentProps = {
   chatConfig: AppChatConfigType;
@@ -67,6 +68,9 @@ const NodeUserGuide = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
             </Box>
             <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
               <FileSelectConfig {...componentsProps} />
+            </Box>
+            <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
+              <ChatDecorateConfig {...componentsProps} />
             </Box>
             <Box mt={3} pt={3} borderTop={'base'} borderColor={'myGray.200'}>
               <TTSGuide {...componentsProps} />
@@ -263,3 +267,23 @@ function FileSelectConfig({ chatConfig: { fileSelectConfig }, setAppDetail }: Co
     />
   );
 }
+
+const ChatDecorateConfig: React.FC<ComponentProps> = ({
+  chatConfig: { chatDecorateConfig },
+  setAppDetail
+}: ComponentProps) => {
+  return (
+    <ChatDecorateSelect
+      value={chatDecorateConfig}
+      onChange={(e) => {
+        setAppDetail((state) => ({
+          ...state,
+          chatConfig: {
+            ...state.chatConfig,
+            chatDecorateConfig: e
+          }
+        }));
+      }}
+    />
+  );
+};

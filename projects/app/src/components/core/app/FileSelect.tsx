@@ -37,7 +37,7 @@ const FileSelect = ({
   const { feConfigs } = useSystemStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const maxSelectFiles = Math.min(feConfigs?.uploadFileMaxAmount ?? 20, 30);
-
+  console.log(value);
   const formLabel = useMemo(
     () =>
       value.canSelectFile || value.canSelectImg

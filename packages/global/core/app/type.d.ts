@@ -102,6 +102,7 @@ export type AppChatConfigType = {
   scheduledTriggerConfig?: AppScheduledTriggerConfigType;
   chatInputGuide?: ChatInputGuideConfigType;
   fileSelectConfig?: AppFileSelectConfigType;
+  chatDecorateConfig?: AppChatDecorateConfigType;
 
   // plugin
   instruction?: string;
@@ -163,4 +164,12 @@ export type AppFileSelectConfigType = {
   canSelectFile: boolean;
   canSelectImg: boolean;
   maxFiles: number;
+};
+
+export type AppChatDecorateConfigType = {
+  open: boolean;
+  robotAvatar: string;
+  robotSubTitle: string;
+  robotTitle: string;
+  problemTexts: string[];
 };

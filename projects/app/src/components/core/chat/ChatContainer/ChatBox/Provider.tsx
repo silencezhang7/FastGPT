@@ -3,6 +3,7 @@ import { useAudioPlay } from '@/web/common/utils/voice';
 import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import {
   AppChatConfigType,
+  AppChatDecorateConfigType,
   AppFileSelectConfigType,
   AppTTSConfigType,
   AppWhisperConfigType,
@@ -11,6 +12,7 @@ import {
 } from '@fastgpt/global/core/app/type';
 import { ChatHistoryItemResType, ChatSiteItemType } from '@fastgpt/global/core/chat/type';
 import {
+  defaultAppChatDecorateConfigType,
   defaultAppSelectFileConfig,
   defaultChatInputGuideConfig,
   defaultTTSConfig,
@@ -71,6 +73,7 @@ type useChatStoreType = OutLinkChatAuthProps &
     outLinkAuthData: OutLinkChatAuthProps;
     getHistoryResponseData: ({ dataId }: { dataId: string }) => Promise<ChatHistoryItemResType[]>;
     fileSelectConfig: AppFileSelectConfigType;
+    chatDecorateConfig: AppChatDecorateConfigType;
   };
 
 export const ChatBoxContext = createContext<useChatStoreType>({
@@ -88,6 +91,7 @@ export const ChatBoxContext = createContext<useChatStoreType>({
     autoSend: false,
     autoTTSResponse: false
   },
+  chatDecorateConfig: defaultAppChatDecorateConfigType,
   autoTTSResponse: false,
   startSegmentedAudio: function (): Promise<any> {
     throw new Error('Function not implemented.');
@@ -156,7 +160,8 @@ const Provider = ({
     ttsConfig = defaultTTSConfig,
     whisperConfig = defaultWhisperConfig,
     chatInputGuide = defaultChatInputGuideConfig,
-    fileSelectConfig = defaultAppSelectFileConfig
+    fileSelectConfig = defaultAppSelectFileConfig,
+    chatDecorateConfig = defaultAppChatDecorateConfigType
   } = useMemo(() => chatConfig, [chatConfig]);
 
   const outLinkAuthData = useMemo(
@@ -247,7 +252,8 @@ const Provider = ({
     getHistoryResponseData,
     chatType,
     showRawSource,
-    showNodeStatus
+    showNodeStatus,
+    chatDecorateConfig
   };
 
   return <ChatBoxContext.Provider value={value}>{children}</ChatBoxContext.Provider>;

@@ -5,6 +5,8 @@ import MyIcon from '@fastgpt/web/components/common/Icon';
 import styles from './index.module.scss';
 import type { IconNameType } from '@fastgpt/web/components/common/Icon/type';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
+import { AppChatDecorateConfigType } from '@fastgpt/global/core/app/type';
+import { useTranslation } from 'next-i18next';
 
 interface MyCardProps {
   icon: IconNameType;
@@ -12,6 +14,7 @@ interface MyCardProps {
   backgroundImage: string;
   click: Function;
 }
+
 //纵向card实现
 const TransverseCard: React.FC<{ onSetChatInput: Function }> = (props) => {
   const jsons: MyCardProps[] = [
@@ -154,14 +157,18 @@ const PortraitCard: React.FC<{
           boxShadow: 'none'
         }}
       >
-        {Content}
+        <Stack spacing={4}>{Content}</Stack>
       </Card>
     </>
   );
 };
 
-const ChatDecorate: React.FC<{ onSetChatInput: Function }> = (props) => {
+const ChatDecorate: React.FC<{
+  onSetChatInput: Function;
+  chatDecorateConfig: AppChatDecorateConfigType | undefined;
+}> = (props) => {
   const { isPc } = useSystem();
+  const { t } = useTranslation();
   const [chatWidth, setChatWidth] = useState('18vw');
   useEffect(() => {
     if (isPc) {
@@ -170,65 +177,94 @@ const ChatDecorate: React.FC<{ onSetChatInput: Function }> = (props) => {
       setChatWidth('50vw');
     }
   }, [isPc]);
+  const [problemTexts, setProblemTexts] = useState<string[]>([]);
+  useEffect(() => {
+    if (props.chatDecorateConfig?.problemTexts) {
+      if (props.chatDecorateConfig.problemTexts.length > 4) {
+        setProblemTexts(props.chatDecorateConfig.problemTexts.slice(0, 4));
+      } else {
+        setProblemTexts(props.chatDecorateConfig.problemTexts);
+      }
+    }
+  }, [props.chatDecorateConfig?.problemTexts]);
+
+  const refresh = () => {
+    if (
+      props.chatDecorateConfig?.problemTexts &&
+      props.chatDecorateConfig.problemTexts.length > 4
+    ) {
+      const array = props.chatDecorateConfig.problemTexts.slice(
+        4,
+        props.chatDecorateConfig.problemTexts.length
+      );
+      if (problemTexts[0] === array[0]) {
+        setProblemTexts([...props.chatDecorateConfig.problemTexts.slice(0, 4)]);
+      } else {
+        setProblemTexts([...array]);
+      }
+    }
+  };
   return (
     <>
-      <Box ml={4}>
+      {props.chatDecorateConfig?.open && (
         <Box ml={4}>
-          <Stack gap={8}>
-            <HStack gap="4">
-              <Avatar
-                size="lg"
-                src={'https://apps.axa.cn/fileServer/download.do?fileId=20241195380586996272696'}
-              />
-              <Stack gap="0">
-                <Text fontWeight="medium">{'亲爱的用户，您好~'}</Text>
-                <Text fontSize={'0.8rem'} color={'gray'} textStyle="sm">
-                  {'我是AI好IT智能客服,很荣幸为您服务'}
-                </Text>
-              </Stack>
-            </HStack>
-          </Stack>
-        </Box>
-        <Box mt={4} ml={4}>
-          <Flex gap={6}>
-            <PortraitCard onSetChatInput={props.onSetChatInput} />
-            <Card size={'lg'} width={chatWidth}>
-              <Box ml={4}>
-                <Text mt={2}>猜你想问：</Text>
-                {[
-                  '核算系统如何重置密码',
-                  '域账号的密码重置规则是什么',
-                  '国内版的teams如何使用',
-                  '如何使用打印机'
-                ].map((item, index) => (
-                  <Text
-                    className={styles.chatFlexCursor}
-                    fontSize={'sm'}
-                    color={'gray'}
-                    onClick={() => props.onSetChatInput(item)}
-                    key={index}
-                    mt={2}
-                  >
-                    {item}
+          <Box ml={4}>
+            <Stack gap={8}>
+              <HStack gap="4">
+                <Avatar size="lg" src={props.chatDecorateConfig?.robotAvatar} />
+                <Stack gap="0">
+                  <Text fontWeight="medium">{props.chatDecorateConfig?.robotSubTitle}</Text>
+                  <Text fontSize={'0.8rem'} color={'gray'} textStyle="sm">
+                    {props.chatDecorateConfig?.robotTitle}
                   </Text>
-                ))}
-              </Box>
-              <Link
-                color={'blue'}
-                ml={4}
-                mt={6}
+                </Stack>
+              </HStack>
+            </Stack>
+          </Box>
+          <Box mt={4} ml={4}>
+            <Flex gap={6}>
+              <PortraitCard onSetChatInput={props.onSetChatInput} />
+              <Card
+                size={'lg'}
+                width={chatWidth}
                 style={{
-                  position: 'relative',
-                  bottom: '0.5rem'
+                  position: 'relative'
                 }}
               >
-                换一批
-                <MyIcon name={'core/chat/refresh'} ml={2} mt={1} w={'20px'} />
-              </Link>
-            </Card>
-          </Flex>
+                <Box ml={4}>
+                  <Text mt={2}>{t('app:chat_decorate_guess_what_asking')}</Text>
+                  {problemTexts.map((item, index) => (
+                    <Text
+                      className={styles.chatFlexCursor}
+                      fontSize={'sm'}
+                      color={'gray'}
+                      onClick={() => props.onSetChatInput(item)}
+                      key={index}
+                      mt={2}
+                    >
+                      {item}
+                    </Text>
+                  ))}
+                </Box>
+                {props.chatDecorateConfig?.problemTexts.length > 4 && (
+                  <Link
+                    color={'blue'}
+                    style={{
+                      position: 'absolute',
+                      bottom: '0.3rem',
+                      left: '1rem'
+                    }}
+                    onClick={refresh}
+                  >
+                    {t('app:chat_decorate_guess_what_asking_refresh')}
+                    <MyIcon name={'core/chat/refresh'} ml={2} mt={1} w={'20px'} />
+                  </Link>
+                )}
+              </Card>
+            </Flex>
+          </Box>
         </Box>
-      </Box>
+      )}
     </>
   );
 };

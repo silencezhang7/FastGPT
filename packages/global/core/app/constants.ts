@@ -1,4 +1,9 @@
-import { AppTTSConfigType, AppFileSelectConfigType, AppWhisperConfigType } from './type';
+import {
+  AppTTSConfigType,
+  AppFileSelectConfigType,
+  AppWhisperConfigType,
+  AppChatDecorateConfigType
+} from './type';
 
 export enum AppTypeEnum {
   folder = 'folder',
@@ -28,6 +33,14 @@ export const defaultAppSelectFileConfig: AppFileSelectConfigType = {
   canSelectFile: false,
   canSelectImg: false,
   maxFiles: 10
+};
+
+export const defaultAppChatDecorateConfigType: AppChatDecorateConfigType = {
+  open: false,
+  robotAvatar: '',
+  robotSubTitle: '',
+  robotTitle: '',
+  problemTexts: []
 };
 
 export enum AppTemplateTypeEnum {
