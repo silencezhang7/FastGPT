@@ -120,7 +120,6 @@ const ChatDecorateSelect = ({
     () => (value.open ? t('common:core.app.whisper.Open') : t('common:core.app.whisper.Close')),
     [t, value.open]
   );
-  console.log(value);
   return (
     <Flex alignItems={'center'}>
       <MyIcon name={'core/app/simpleMode/chatHeader'} mr={2} w={'20px'} />
