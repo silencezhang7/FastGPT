@@ -2,7 +2,8 @@ import {
   AppTTSConfigType,
   AppFileSelectConfigType,
   AppWhisperConfigType,
-  AppChatDecorateConfigType
+  AppChatDecorateConfigType,
+	AppAutoExecuteConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -16,6 +17,11 @@ export enum AppTypeEnum {
 export const AppFolderTypeList = [AppTypeEnum.folder, AppTypeEnum.httpPlugin];
 
 export const defaultTTSConfig: AppTTSConfigType = { type: 'web' };
+
+export const defaultAutoExecuteConfig: AppAutoExecuteConfigType = {
+  open: false,
+  defaultPrompt: ''
+};
 
 export const defaultWhisperConfig: AppWhisperConfigType = {
   open: false,

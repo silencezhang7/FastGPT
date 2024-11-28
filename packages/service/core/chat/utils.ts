@@ -109,7 +109,7 @@ export const loadRequestMessages = async ({
     }
     return Promise.all(
       messages.map(async (item) => {
-        if (item.type === 'image_url' && process.env.MULTIPLE_DATA_TO_BASE64 === 'true') {
+        if (item.type === 'image_url') {
           // Remove url origin
           const imgUrl = (() => {
             if (origin && item.image_url.url.startsWith(origin)) {
@@ -117,6 +117,11 @@ export const loadRequestMessages = async ({
             }
             return item.image_url.url;
           })();
+
+          // base64 image
+          if (imgUrl.startsWith('data:image/')) {
+            return item;
+          }
 
           try {
             // If imgUrl is a local path, load image from local, and set url to base64

@@ -3,6 +3,7 @@ import type {
   SystemChatItemType,
   UserChatItemType
 } from '@fastgpt/global/core/chat/type.d';
+import type { AIChatItemType, UserChatItemType } from '@fastgpt/global/core/chat/type.d';
 import { MongoApp } from '../app/schema';
 import { ChatItemValueTypeEnum, ChatRoleEnum } from '@fastgpt/global/core/chat/constants';
 import { MongoChatItem } from './chatItemSchema';
@@ -132,21 +133,15 @@ export async function saveChat({
 export const updateInteractiveChat = async ({
   chatId,
   appId,
-  teamId,
-  tmbId,
   userInteractiveVal,
   aiResponse,
-  newVariables,
-  newTitle
+  newVariables
 }: {
   chatId: string;
   appId: string;
-  teamId: string;
-  tmbId: string;
   userInteractiveVal: string;
   aiResponse: AIChatItemType & { dataId?: string };
   newVariables?: Record<string, any>;
-  newTitle: string;
 }) => {
   if (!chatId) return;
 
@@ -231,7 +226,6 @@ export const updateInteractiveChat = async ({
       {
         $set: {
           variables: newVariables,
-          title: newTitle,
           updateTime: new Date()
         }
       },

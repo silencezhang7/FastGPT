@@ -18,7 +18,8 @@ export const chatConfigType = {
   chatInputGuide: Object,
   fileSelectConfig: Object,
   chatDecorateConfig: Object,
-  instruction: String
+  instruction: String,
+  autoExecute: Object
 };
 
 // schema

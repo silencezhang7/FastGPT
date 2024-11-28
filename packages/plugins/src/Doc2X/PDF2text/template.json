@@ -1,42 +1,26 @@
 {
   "author": "Menghuan1918",
   "version": "488",
-  "name": "Doc2X 图像(文件)识别",
+  "name": "PDF识别",
   "avatar": "plugins/doc2x",
-  "intro": "将上传的图片文件发送至Doc2X进行解析，返回带LaTeX公式的markdown格式的文本",
+  "intro": "将PDF文件发送至Doc2X进行解析，返回结构化的LaTeX公式的文本(markdown)，支持传入String类型的URL或者流程输出中的文件链接变量",
   "courseUrl": "https://fael3z0zfze.feishu.cn/wiki/Rkc5witXWiJoi5kORd2cofh6nDg?fromScene=spaceOverview",
   "showStatus": true,
   "weight": 10,
-
   "isTool": true,
   "templateType": "tools",
-
   "workflow": {
     "nodes": [
       {
-        "nodeId": "pluginConfig",
-        "name": "common:core.module.template.system_config",
-        "intro": "",
-        "avatar": "core/workflow/template/systemConfig",
-        "flowNodeType": "pluginConfig",
-        "position": {
-          "x": -90.53591960393504,
-          "y": -17.580286776561252
-        },
-        "version": "4811",
-        "inputs": [],
-        "outputs": []
-      },
-      {
         "nodeId": "pluginInput",
-        "name": "插件开始",
+        "name": "自定义插件输入",
         "intro": "可以配置插件需要哪些输入，利用这些输入来运行插件",
         "avatar": "core/workflow/template/workflowStart",
         "flowNodeType": "pluginInput",
         "showStatus": false,
         "position": {
-          "x": 368.6800424053505,
-          "y": -17.580286776561252
+          "x": -137.96875104510553,
+          "y": -90.9968973555371
         },
         "version": "481",
         "inputs": [
@@ -47,45 +31,45 @@
             "canEdit": true,
             "key": "apikey",
             "label": "apikey",
-            "description": "Doc2X的验证密匙，对于个人用户可以从Doc2X官网 - 个人信息 - 身份令牌获得",
+            "description": "Doc2X的API密匙，可以从Doc2X开放平台获得",
             "required": true,
-            "toolDescription": "",
-            "defaultValue": ""
+            "defaultValue": "",
+            "list": []
           },
           {
-            "renderTypeList": ["reference"],
+            "renderTypeList": ["fileSelect"],
             "selectedTypeIndex": 0,
             "valueType": "arrayString",
             "canEdit": true,
             "key": "files",
             "label": "files",
-            "description": "待处理图片文件",
+            "description": "需要处理的PDF地址",
             "required": true,
-            "toolDescription": "待处理图片文件"
+            "list": [],
+            "canSelectFile": true,
+            "canSelectImg": false,
+            "maxFiles": 14,
+            "defaultValue": ""
           },
           {
-            "renderTypeList": ["switch"],
+            "renderTypeList": ["switch", "reference"],
             "selectedTypeIndex": 0,
             "valueType": "boolean",
             "canEdit": true,
-            "key": "img_correction",
-            "label": "img_correction",
-            "description": "是否启用图形矫正功能",
-            "required": true,
-            "toolDescription": "",
-            "defaultValue": false
-          },
-          {
-            "renderTypeList": ["switch"],
-            "selectedTypeIndex": 0,
-            "valueType": "boolean",
-            "canEdit": true,
-            "key": "formula",
-            "label": "formula",
-            "description": "是否开启纯公式识别(仅适用于图片内容仅有公式时)",
-            "required": true,
-            "toolDescription": "",
-            "defaultValue": false
+            "key": "HTMLtable",
+            "label": "HTMLtable",
+            "description": "是否以HTML格式输出表格。如果需要精确地输出表格，请打开此开关以使用HTML格式。关闭后，表格将转换为Markdown形式输出，但这可能会损失一些表格特性，如合并单元格。",
+            "defaultValue": false,
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "maxFiles": 5,
+            "canSelectFile": true,
+            "canSelectImg": true,
+            "required": true
           }
         ],
         "outputs": [
@@ -104,31 +88,24 @@
             "type": "hidden"
           },
           {
-            "id": "img_correction",
+            "id": "htmltable",
             "valueType": "boolean",
-            "key": "img_correction",
-            "label": "img_correction",
-            "type": "hidden"
-          },
-          {
-            "id": "formula",
-            "valueType": "boolean",
-            "key": "formula",
-            "label": "formula",
+            "key": "HTMLtable",
+            "label": "HTMLtable",
             "type": "hidden"
           }
         ]
       },
       {
         "nodeId": "pluginOutput",
-        "name": "插件输出",
+        "name": "自定义插件输出",
         "intro": "自定义配置外部输出，使用插件时，仅暴露自定义配置的输出",
         "avatar": "core/workflow/template/pluginOutput",
         "flowNodeType": "pluginOutput",
         "showStatus": false,
         "position": {
-          "x": 1796.2235867744578,
-          "y": 6.419713223438748
+          "x": 1505.494975310334,
+          "y": -4.14668564643415
         },
         "version": "481",
         "inputs": [
@@ -138,17 +115,18 @@
             "canEdit": true,
             "key": "result",
             "label": "result",
-            "description": "处理结果(或者是报错信息)",
+            "description": "处理结果，由文件名以及文档内容组成，多个文件之间由横线分隔开",
             "value": ["zHG5jJBkXmjB", "xWQuEf50F3mr"]
           },
           {
             "renderTypeList": ["reference"],
-            "valueType": "string",
+            "valueType": "object",
             "canEdit": true,
-            "key": "failreason",
-            "label": "failreason",
-            "description": "文件处理失败原因，由文件名以及报错组成，多个文件之间由横线分隔开",
-            "value": ["zHG5jJBkXmjB", "jbv4nVZvmFXm"]
+            "key": "error",
+            "label": "error",
+            "description": "",
+            "value": ["zHG5jJBkXmjB", "httpRawResponse"],
+            "isToolOutput": true
           },
           {
             "renderTypeList": ["reference"],
@@ -157,7 +135,8 @@
             "key": "success",
             "label": "success",
             "description": "是否全部文件都处理成功，如有没有处理成功的文件，失败原因将会输出在failreason中",
-            "value": ["zHG5jJBkXmjB", "k46cjNulVk5Y"]
+            "value": ["zHG5jJBkXmjB", "m6CJJj7GFud5"],
+            "isToolOutput": false
           }
         ],
         "outputs": []
@@ -170,8 +149,8 @@
         "flowNodeType": "httpRequest468",
         "showStatus": true,
         "position": {
-          "x": 1081.967607938733,
-          "y": -426.08028677656125
+          "x": 619.0661933308237,
+          "y": -472.91377894611503
         },
         "version": "481",
         "inputs": [
@@ -221,7 +200,7 @@
             "renderTypeList": ["custom"],
             "valueType": "number",
             "label": "",
-            "value": 30,
+            "value": 300,
             "min": 5,
             "max": 600,
             "required": true,
@@ -236,7 +215,7 @@
             "description": "common:core.module.input.description.Http Request Url",
             "placeholder": "https://api.ai.com/getInventory",
             "required": false,
-            "value": "Doc2X/FileImg2text",
+            "value": "Doc2X/PDF2text",
             "debugLabel": "",
             "toolDescription": ""
           },
@@ -266,7 +245,7 @@
             "key": "system_httpJsonBody",
             "renderTypeList": ["hidden"],
             "valueType": "any",
-            "value": "{\n  \"apikey\": \"{{apikey}}\",\n  \"files\": {{files}},\n  \"img_correction\": {{img_correction}},\n  \"formula\": {{formula}}\n}",
+            "value": "{\n  \"apikey\": \"{{apikey}}\",\n  \"HTMLtable\": {{HTMLtable}},\n  \"files\": {{files}}\n}",
             "label": "",
             "required": false,
             "debugLabel": "",
@@ -350,14 +329,14 @@
               "showDefaultValue": true
             },
             "required": true,
-            "value": ["pluginInput", "url"]
+            "value": [["pluginInput", "url"]]
           },
           {
             "renderTypeList": ["reference"],
             "valueType": "boolean",
             "canEdit": true,
-            "key": "img_correction",
-            "label": "img_correction",
+            "key": "HTMLtable",
+            "label": "HTMLtable",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -380,37 +359,7 @@
               "showDefaultValue": true
             },
             "required": true,
-            "value": ["pluginInput", "img_correction"]
-          },
-          {
-            "renderTypeList": ["reference"],
-            "valueType": "boolean",
-            "canEdit": true,
-            "key": "formula",
-            "label": "formula",
-            "customInputConfig": {
-              "selectValueTypeList": [
-                "string",
-                "number",
-                "boolean",
-                "object",
-                "arrayString",
-                "arrayNumber",
-                "arrayBoolean",
-                "arrayObject",
-                "arrayAny",
-                "any",
-                "chatHistory",
-                "datasetQuote",
-                "dynamic",
-                "selectApp",
-                "selectDataset"
-              ],
-              "showDescription": false,
-              "showDefaultValue": true
-            },
-            "required": true,
-            "value": ["pluginInput", "formula"]
+            "value": ["pluginInput", "htmltable"]
           }
         ],
         "outputs": [
@@ -466,14 +415,7 @@
             "label": "result"
           },
           {
-            "id": "jbv4nVZvmFXm",
-            "valueType": "string",
-            "type": "dynamic",
-            "key": "failreason",
-            "label": "failreason"
-          },
-          {
-            "id": "k46cjNulVk5Y",
+            "id": "m6CJJj7GFud5",
             "valueType": "boolean",
             "type": "dynamic",
             "key": "success",
@@ -484,17 +426,36 @@
     ],
     "edges": [
       {
-        "source": "pluginInput",
-        "target": "zHG5jJBkXmjB",
-        "sourceHandle": "pluginInput-source-right",
-        "targetHandle": "zHG5jJBkXmjB-target-left"
-      },
-      {
         "source": "zHG5jJBkXmjB",
         "target": "pluginOutput",
         "sourceHandle": "zHG5jJBkXmjB-source-right",
         "targetHandle": "pluginOutput-target-left"
+      },
+      {
+        "source": "pluginInput",
+        "target": "zHG5jJBkXmjB",
+        "sourceHandle": "pluginInput-source-right",
+        "targetHandle": "zHG5jJBkXmjB-target-left"
       }
-    ]
+    ],
+    "chatConfig": {
+      "questionGuide": false,
+      "ttsConfig": {
+        "type": "web"
+      },
+      "whisperConfig": {
+        "open": false,
+        "autoSend": false,
+        "autoTTSResponse": false
+      },
+      "chatInputGuide": {
+        "open": false,
+        "textList": [],
+        "customUrl": ""
+      },
+      "instruction": "",
+      "variables": [],
+      "welcomeText": ""
+    }
   }
 }

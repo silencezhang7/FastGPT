@@ -4,77 +4,74 @@ import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import {
   AppChatConfigType,
   AppChatDecorateConfigType,
+  AppAutoExecuteConfigType,
   AppFileSelectConfigType,
   AppTTSConfigType,
   AppWhisperConfigType,
   ChatInputGuideConfigType,
   VariableItemType
 } from '@fastgpt/global/core/app/type';
-import { ChatHistoryItemResType, ChatSiteItemType } from '@fastgpt/global/core/chat/type';
+import { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type';
 import {
   defaultAppChatDecorateConfigType,
   defaultAppSelectFileConfig,
+  defaultAutoExecuteConfig,
   defaultChatInputGuideConfig,
   defaultTTSConfig,
   defaultWhisperConfig
 } from '@fastgpt/global/core/app/constants';
-import { createContext } from 'use-context-selector';
-import { UseFormReturn } from 'react-hook-form';
+import { createContext, useContextSelector } from 'use-context-selector';
 import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
 import { getChatResData } from '@/web/core/chat/api';
-import { ChatBoxInputFormType } from './type';
+import { ChatItemContext } from '@/web/core/chat/context/chatItemContext';
+import { ChatRecordContext } from '@/web/core/chat/context/chatRecordContext';
 
-export type ChatProviderProps = OutLinkChatAuthProps & {
-  appAvatar?: string;
+export type ChatProviderProps = {
   appId: string;
-  chatConfig?: AppChatConfigType;
+  chatId: string;
+  outLinkAuthData?: OutLinkChatAuthProps;
 
-  chatHistories: ChatSiteItemType[];
-  setChatHistories: React.Dispatch<React.SetStateAction<ChatSiteItemType[]>>;
-
-  variablesForm: UseFormReturn<ChatBoxInputFormType, any>;
-
-  // not chat test params
-  chatId?: string;
   chatType: 'log' | 'chat' | 'share' | 'team';
   showRawSource: boolean;
   showNodeStatus: boolean;
 };
 
-type useChatStoreType = OutLinkChatAuthProps &
-  ChatProviderProps & {
-    welcomeText: string;
-    variableList: VariableItemType[];
-    allVariableList: VariableItemType[];
-    questionGuide: boolean;
-    ttsConfig: AppTTSConfigType;
-    whisperConfig: AppWhisperConfigType;
-    autoTTSResponse: boolean;
-    startSegmentedAudio: () => Promise<any>;
-    splitText2Audio: (text: string, done?: boolean | undefined) => void;
-    finishSegmentedAudio: () => void;
-    audioLoading: boolean;
-    audioPlaying: boolean;
-    hasAudio: boolean;
-    playAudioByText: ({
-      text,
-      buffer
-    }: {
-      text: string;
-      buffer?: Uint8Array | undefined;
-    }) => Promise<{
-      buffer?: Uint8Array | undefined;
-    }>;
-    cancelAudio: () => void;
-    audioPlayingChatId: string | undefined;
-    setAudioPlayingChatId: React.Dispatch<React.SetStateAction<string | undefined>>;
-    isChatting: boolean;
-    chatInputGuide: ChatInputGuideConfigType;
-    outLinkAuthData: OutLinkChatAuthProps;
-    getHistoryResponseData: ({ dataId }: { dataId: string }) => Promise<ChatHistoryItemResType[]>;
-    fileSelectConfig: AppFileSelectConfigType;
-    chatDecorateConfig: AppChatDecorateConfigType;
-  };
+type useChatStoreType = ChatProviderProps & {
+  welcomeText: string;
+  variableList: VariableItemType[];
+  allVariableList: VariableItemType[];
+  questionGuide: boolean;
+  ttsConfig: AppTTSConfigType;
+  whisperConfig: AppWhisperConfigType;
+  autoTTSResponse: boolean;
+  autoExecute: AppAutoExecuteConfigType;
+  startSegmentedAudio: () => Promise<any>;
+  splitText2Audio: (text: string, done?: boolean | undefined) => void;
+  finishSegmentedAudio: () => void;
+  audioLoading: boolean;
+  audioPlaying: boolean;
+  hasAudio: boolean;
+  playAudioByText: ({
+    text,
+    buffer
+  }: {
+    text: string;
+    buffer?: Uint8Array | undefined;
+  }) => Promise<{
+    buffer?: Uint8Array | undefined;
+  }>;
+  cancelAudio: () => void;
+  audioPlayingChatId: string | undefined;
+  setAudioPlayingChatId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  isChatting: boolean;
+  chatInputGuide: ChatInputGuideConfigType;
+  getHistoryResponseData: ({ dataId }: { dataId: string }) => Promise<ChatHistoryItemResType[]>;
+  fileSelectConfig: AppFileSelectConfigType;
+	chatDecorateConfig: AppChatDecorateConfigType;
+	appId: string;
+  chatId: string;
+  outLinkAuthData: OutLinkChatAuthProps;
+};
 
 export const ChatBoxContext = createContext<useChatStoreType>({
   welcomeText: '',
@@ -97,10 +94,6 @@ export const ChatBoxContext = createContext<useChatStoreType>({
     throw new Error('Function not implemented.');
   },
   splitText2Audio: function (text: string, done?: boolean | undefined): void {
-    throw new Error('Function not implemented.');
-  },
-  chatHistories: [],
-  setChatHistories: function (value: React.SetStateAction<ChatSiteItemType[]>): void {
     throw new Error('Function not implemented.');
   },
   isChatting: false,
@@ -136,23 +129,24 @@ export const ChatBoxContext = createContext<useChatStoreType>({
 });
 
 const Provider = ({
-  shareId,
-  outLinkUid,
-  teamId,
-  teamToken,
-
-  chatHistories,
-  setChatHistories,
-  variablesForm,
+  appId,
+  chatId,
+  outLinkAuthData = {},
   chatType = 'chat',
   showRawSource,
   showNodeStatus,
-  chatConfig = {},
   children,
   ...props
 }: ChatProviderProps & {
   children: React.ReactNode;
 }) => {
+  const chatConfig = useContextSelector(
+    ChatItemContext,
+    (v) => v.chatBoxData?.app?.chatConfig || {}
+  );
+  const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
+  const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
+
   const {
     welcomeText = '',
     variables = [],
@@ -162,17 +156,8 @@ const Provider = ({
     chatInputGuide = defaultChatInputGuideConfig,
     fileSelectConfig = defaultAppSelectFileConfig,
     chatDecorateConfig = defaultAppChatDecorateConfigType
+	  autoExecute = defaultAutoExecuteConfig
   } = useMemo(() => chatConfig, [chatConfig]);
-
-  const outLinkAuthData = useMemo(
-    () => ({
-      shareId,
-      outLinkUid,
-      teamId,
-      teamToken
-    }),
-    [shareId, outLinkUid, teamId, teamToken]
-  );
 
   // segment audio
   const [audioPlayingChatId, setAudioPlayingChatId] = useState<string>();
@@ -195,37 +180,34 @@ const Provider = ({
 
   const isChatting = useMemo(
     () =>
-      chatHistories[chatHistories.length - 1] &&
-      chatHistories[chatHistories.length - 1]?.status !== 'finish',
-    [chatHistories]
+      chatRecords[chatRecords.length - 1] &&
+      chatRecords[chatRecords.length - 1]?.status !== 'finish',
+    [chatRecords]
   );
   const getHistoryResponseData = useCallback(
     async ({ dataId }: { dataId: string }) => {
-      const aimItem = chatHistories.find((item) => item.dataId === dataId)!;
-      if (!!aimItem?.responseData || !props.chatId) {
+      const aimItem = chatRecords.find((item) => item.dataId === dataId)!;
+      if (!!aimItem?.responseData || !chatId) {
         return aimItem.responseData || [];
       } else {
         let resData = await getChatResData({
-          appId: props.appId,
-          chatId: props.chatId,
+          appId: appId,
+          chatId: chatId,
           dataId,
           ...outLinkAuthData
         });
-        setChatHistories((state) =>
+        setChatRecords((state) =>
           state.map((item) => (item.dataId === dataId ? { ...item, responseData: resData } : item))
         );
         return resData;
       }
     },
-    [chatHistories, outLinkAuthData, props.appId, props.chatId, setChatHistories]
+    [chatRecords, chatId, appId, outLinkAuthData, setChatRecords]
   );
   const value: useChatStoreType = {
     ...props,
-    shareId,
-    outLinkUid,
-    teamId,
-    teamToken,
     welcomeText,
+    autoExecute,
     variableList: variables.filter((item) => item.type !== VariableInputEnum.custom),
     allVariableList: variables,
     questionGuide,
@@ -243,12 +225,11 @@ const Provider = ({
     cancelAudio,
     audioPlayingChatId,
     setAudioPlayingChatId,
-    chatHistories,
-    setChatHistories,
     isChatting,
     chatInputGuide,
+    appId,
+    chatId,
     outLinkAuthData,
-    variablesForm,
     getHistoryResponseData,
     chatType,
     showRawSource,

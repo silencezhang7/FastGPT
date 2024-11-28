@@ -13,7 +13,8 @@ enum FnTypeEnum {
   file = 'file',
   visionModel = 'visionModel',
   instruction = 'instruction',
-  chatDecorate = 'chatDecorate'
+  chatDecorate = 'chatDecorate',
+  autoExec = 'autoExec'
 }
 
 const ChatFunctionTip = ({ type }: { type: `${FnTypeEnum}` }) => {
@@ -73,6 +74,12 @@ const ChatFunctionTip = ({ type }: { type: `${FnTypeEnum}` }) => {
       title: t('app:chat_decorate'),
       desc: t('app:chat_decorate_tip'),
       imgUrl: '/imgs/app/chatDecoratePlaceholder.png'
+    },
+    [FnTypeEnum.autoExec]: {
+      icon: '/imgs/app/autoExec-icon.svg',
+      title: t('common:core.app.Auto execute'),
+      desc: t('app:auto_execute_tip'),
+      imgUrl: '/imgs/app/autoExec.svg'
     }
   });
   const data = map.current[type];

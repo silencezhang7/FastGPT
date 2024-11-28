@@ -3,14 +3,19 @@ import { SetStateAction, useEffect, useRef } from 'react';
 import { formatTime2YMDHMS } from '@fastgpt/global/common/string/time';
 import { AppSimpleEditFormType } from '@fastgpt/global/core/app/type';
 import { isEqual } from 'lodash';
+import { getAppDiffConfig } from '@/web/core/app/diff';
 
 export type SimpleAppSnapshotType = {
-  appForm: AppSimpleEditFormType;
+  diff?: Record<string, any>;
   title: string;
   isSaved?: boolean;
+  state?: AppSimpleEditFormType;
+
+  // old format
+  appForm?: AppSimpleEditFormType;
 };
 export type onSaveSnapshotFnType = (props: {
-  appForm: AppSimpleEditFormType;
+  appForm: AppSimpleEditFormType; // Current edited app form data
   title?: string;
   isSaved?: boolean;
 }) => Promise<boolean>;
@@ -32,7 +37,8 @@ export const compareSimpleAppSnapshot = (
         scheduledTriggerConfig: appForm1.chatConfig?.scheduledTriggerConfig || undefined,
         chatInputGuide: appForm1.chatConfig?.chatInputGuide || undefined,
         fileSelectConfig: appForm1.chatConfig?.fileSelectConfig || undefined,
-        instruction: appForm1.chatConfig?.instruction || ''
+        instruction: appForm1.chatConfig?.instruction || '',
+        autoExecute: appForm1.chatConfig?.autoExecute || undefined
       },
       {
         welcomeText: appForm2.chatConfig?.welcomeText || '',
@@ -43,7 +49,8 @@ export const compareSimpleAppSnapshot = (
         scheduledTriggerConfig: appForm2.chatConfig?.scheduledTriggerConfig || undefined,
         chatInputGuide: appForm2.chatConfig?.chatInputGuide || undefined,
         fileSelectConfig: appForm2.chatConfig?.fileSelectConfig || undefined,
-        instruction: appForm2.chatConfig?.instruction || ''
+        instruction: appForm2.chatConfig?.instruction || '',
+        autoExecute: appForm2.chatConfig?.autoExecute || undefined
       }
     )
   ) {
@@ -56,7 +63,7 @@ export const compareSimpleAppSnapshot = (
 
 export const useSimpleAppSnapshots = (appId: string) => {
   const forbiddenSaveSnapshot = useRef(false);
-  const [past, setPast] = useLocalStorageState<SimpleAppSnapshotType[]>(`${appId}-past-simple`, {
+  const [past, setPast] = useLocalStorageState<SimpleAppSnapshotType[]>(`${appId}-past`, {
     defaultValue: []
   }) as [SimpleAppSnapshotType[], (value: SetStateAction<SimpleAppSnapshotType[]>) => void];
 
@@ -66,26 +73,47 @@ export const useSimpleAppSnapshots = (appId: string) => {
       return false;
     }
 
-    const pastState = past[0];
+    if (past.length === 0) {
+      setPast([
+        {
+          title: title || formatTime2YMDHMS(new Date()),
+          isSaved,
+          state: appForm
+        }
+      ]);
+      return true;
+    }
 
-    const isPastEqual = compareSimpleAppSnapshot(pastState?.appForm, appForm);
-    if (isPastEqual) return false;
+    const lastPast = past[past.length - 1];
+    if (!lastPast?.state) return false;
 
-    setPast((past) => [
-      {
-        appForm,
+    // Get the diff between the current app form data and the initial state
+    const diff = getAppDiffConfig(lastPast.state, appForm);
+
+    // If the diff is the same as the previous snapshot, do not save
+    if (past[0].diff && isEqual(past[0].diff, diff)) return false;
+
+    setPast((past) => {
+      const newPast = {
+        diff,
         title: title || formatTime2YMDHMS(new Date()),
         isSaved
-      },
-      ...past.slice(0, 199)
-    ]);
+      };
+
+      if (past.length >= 100) {
+        return [newPast, ...past.slice(0, 98), lastPast];
+      }
+      return [newPast, ...past];
+    });
     return true;
   });
 
   // remove other app's snapshot
   useEffect(() => {
     const keys = Object.keys(localStorage);
-    const snapshotKeys = keys.filter((key) => key.endsWith('-past-simple'));
+    const snapshotKeys = keys.filter(
+      (key) => key.endsWith('-past') || key.endsWith('-past-simple')
+    );
     snapshotKeys.forEach((key) => {
       const keyAppId = key.split('-')[0];
       if (keyAppId !== appId) {

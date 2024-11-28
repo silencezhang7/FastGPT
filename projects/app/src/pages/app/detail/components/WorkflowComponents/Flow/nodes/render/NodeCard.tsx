@@ -20,7 +20,6 @@ import { getNanoid } from '@fastgpt/global/common/string/tools';
 import { useContextSelector } from 'use-context-selector';
 import { WorkflowContext } from '../../../context';
 import { moduleTemplatesFlat } from '@fastgpt/global/core/workflow/template/constants';
-import { QuestionOutlineIcon } from '@chakra-ui/icons';
 import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useWorkflowUtils } from '../../hooks/useUtils';
@@ -29,6 +28,7 @@ import { getDocPath } from '@/web/common/system/doc';
 import { WorkflowNodeEdgeContext } from '../../../context/workflowInitContext';
 import { WorkflowEventContext } from '../../../context/workflowEventContext';
 import MyImage from '@fastgpt/web/components/common/Image/MyImage';
+import MyIconButton from '@fastgpt/web/components/common/Icon/button';
 
 type Props = FlowNodeItemType & {
   children?: React.ReactNode | React.ReactNode[] | string;
@@ -115,6 +115,16 @@ const NodeCard = (props: Props) => {
       }
     },
     {
+      onSuccess(res) {
+        if (!res) return;
+        // Execute forcibly updates the courseUrl field
+        onChangeNode({
+          nodeId,
+          type: 'attr',
+          key: 'courseUrl',
+          value: res?.courseUrl
+        });
+      },
       manual: false
     }
   );
@@ -156,7 +166,7 @@ const NodeCard = (props: Props) => {
             <ToolTargetHandle show={showToolHandle} nodeId={nodeId} />
 
             {/* avatar and name */}
-            <Flex alignItems={'center'}>
+            <Flex alignItems={'center'} mb={intro ? 1 : 0}>
               {node?.flowNodeType !== FlowNodeTypeEnum.stopTool && (
                 <Flex
                   alignItems={'center'}
@@ -192,15 +202,13 @@ const NodeCard = (props: Props) => {
               <Box ml={2} fontSize={'18px'} fontWeight={'medium'} color={'myGray.900'}>
                 {t(name as any)}
               </Box>
-              <MyIcon
-                className="controller-rename"
+              <Button
                 display={'none'}
-                name={'edit'}
-                w={'14px'}
+                variant={'grayGhost'}
+                size={'xs'}
+                ml={0.5}
+                className="controller-rename"
                 cursor={'pointer'}
-                ml={1}
-                color={'myGray.500'}
-                _hover={{ color: 'primary.600' }}
                 onClick={() => {
                   onOpenCustomTitleModal({
                     defaultVal: name,
@@ -220,7 +228,9 @@ const NodeCard = (props: Props) => {
                     }
                   });
                 }}
-              />
+              >
+                <MyIcon name={'edit'} w={'14px'} />
+              </Button>
               <Box flex={1} />
               {hasNewVersion && (
                 <MyTooltip label={t('app:app.modules.click to update')}>
@@ -238,7 +248,7 @@ const NodeCard = (props: Props) => {
                     onClick={onOpenConfirmSync(onClickSyncVersion)}
                   >
                     <Box>{t('app:app.modules.has new version')}</Box>
-                    <QuestionOutlineIcon ml={1} />
+                    <MyIcon name={'help'} w={'14px'} ml={1} />
                   </Button>
                 </MyTooltip>
               )}
@@ -253,32 +263,20 @@ const NodeCard = (props: Props) => {
                     />
                   }
                 >
-                  <Box
-                    fontSize={'sm'}
-                    color={'primary.700'}
-                    p={1}
-                    rounded={'sm'}
-                    cursor={'default'}
-                    _hover={{ bg: 'rgba(17, 24, 36, 0.05)' }}
-                  >
+                  <Button variant={'grayGhost'} size={'xs'} color={'primary.600'} px={1}>
                     {t('common:core.module.Diagram')}
-                  </Box>
+                  </Button>
                 </MyTooltip>
               )}
               {!!nodeTemplate?.diagram && node?.courseUrl && (
-                <Box bg={'myGray.300'} w={'1px'} h={'12px'} mx={1} />
+                <Box bg={'myGray.300'} w={'1px'} h={'12px'} ml={1} mr={0.5} />
               )}
               {node?.courseUrl && !hasNewVersion && (
                 <MyTooltip label={t('workflow:Node.Open_Node_Course')}>
-                  <MyIcon
-                    cursor={'pointer'}
-                    name="book"
-                    color={'primary.600'}
-                    w={'18px'}
+                  <MyIconButton
                     ml={1}
-                    _hover={{
-                      color: 'primary.800'
-                    }}
+                    icon="book"
+                    color={'primary.600'}
                     onClick={() => window.open(getDocPath(node.courseUrl || ''), '_blank')}
                   />
                 </MyTooltip>
@@ -368,7 +366,7 @@ const NodeCard = (props: Props) => {
     >
       <NodeDebugResponse nodeId={nodeId} debugResult={debugResult} />
       {Header}
-      <Flex flexDirection={'column'} flex={1} my={!isFolded ? 4 : 0} gap={2}>
+      <Flex flexDirection={'column'} flex={1} my={!isFolded ? 3 : 0} gap={2}>
         {!isFolded ? children : <Box h={4} />}
       </Flex>
       {RenderHandle}
@@ -511,7 +509,7 @@ const MenuRender = React.memo(function MenuRender({
           className="nodrag controller-menu"
           display={'none'}
           flexDirection={'column'}
-          gap={3}
+          gap={2}
           position={'absolute'}
           top={'-20px'}
           right={0}
@@ -522,16 +520,18 @@ const MenuRender = React.memo(function MenuRender({
           pt={'20px'}
         >
           {menuList.map((item) => (
-            <Box key={item.icon}>
-              <Button
-                size={'xs'}
-                variant={item.variant}
-                leftIcon={<MyIcon name={item.icon as any} w={'13px'} />}
-                onClick={item.onClick}
-              >
-                {t(item.label as any)}
-              </Button>
-            </Box>
+            <Button
+              key={item.icon}
+              h={8}
+              fontSize={'sm'}
+              pl={2}
+              pr={6}
+              variant={item.variant}
+              leftIcon={<MyIcon name={item.icon as any} w={'16px'} mr={-1} />}
+              onClick={item.onClick}
+            >
+              {t(item.label as any)}
+            </Button>
           ))}
         </Box>
         <DebugInputModal />
@@ -582,31 +582,32 @@ const NodeIntro = React.memo(function NodeIntro({
           <Box fontSize={'sm'} color={'myGray.500'} flex={'1 0 0'}>
             {t(intro as any)}
           </Box>
-          <Flex
-            p={'7px'}
-            rounded={'sm'}
-            alignItems={'center'}
-            _hover={{
-              bg: NodeIsTool ? 'myGray.100' : 'transparent'
-            }}
-            cursor={NodeIsTool ? 'pointer' : 'default'}
-            onClick={() => {
-              if (!NodeIsTool) return;
-              onOpenIntroModal({
-                defaultVal: intro,
-                onSuccess(e) {
-                  onChangeNode({
-                    nodeId,
-                    type: 'attr',
-                    key: 'intro',
-                    value: e
-                  });
-                }
-              });
-            }}
-          >
-            <MyIcon name={'edit'} w={'18px'} opacity={NodeIsTool ? 1 : 0} />
-          </Flex>
+          {NodeIsTool && (
+            <Flex
+              p={'7px'}
+              rounded={'sm'}
+              alignItems={'center'}
+              _hover={{
+                bg: 'myGray.100'
+              }}
+              cursor={'pointer'}
+              onClick={() => {
+                onOpenIntroModal({
+                  defaultVal: intro,
+                  onSuccess(e) {
+                    onChangeNode({
+                      nodeId,
+                      type: 'attr',
+                      key: 'intro',
+                      value: e
+                    });
+                  }
+                });
+              }}
+            >
+              <MyIcon name={'edit'} w={'18px'} />
+            </Flex>
+          )}
         </Flex>
         <EditIntroModal maxLength={500} />
       </>

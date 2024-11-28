@@ -11,7 +11,8 @@ const getCommercialPlugins = () => {
   return GET<SystemPluginTemplateItemType[]>('/core/app/plugin/getSystemPlugins');
 };
 export const getSystemPlugins = async (refresh = false) => {
-  if (isProduction && global.systemPlugins && !refresh) return cloneDeep(global.systemPlugins);
+  if (isProduction && global.systemPlugins && global.systemPlugins.length > 0 && !refresh)
+    return cloneDeep(global.systemPlugins);
 
   try {
     if (!global.systemPlugins) {
@@ -54,17 +55,22 @@ const getCommercialCb = async () => {
     {}
   );
 };
-export const getSystemPluginCb = async () => {
-  if (isProduction && global.systemPluginCb) return global.systemPluginCb;
+
+export const getSystemPluginCb = async (refresh = false) => {
+  if (
+    isProduction &&
+    global.systemPluginCb &&
+    Object.keys(global.systemPluginCb).length > 0 &&
+    !refresh
+  )
+    return global.systemPluginCb;
 
   try {
-    await getSystemPlugins();
     global.systemPluginCb = {};
+    await getSystemPlugins(refresh);
     global.systemPluginCb = FastGPTProUrl ? await getCommercialCb() : await getCommunityCb();
     return global.systemPluginCb;
   } catch (error) {
-    //@ts-ignore
-    global.systemPluginCb = undefined;
     return Promise.reject(error);
   }
 };

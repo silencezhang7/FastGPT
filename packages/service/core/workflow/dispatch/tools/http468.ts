@@ -18,7 +18,6 @@ import {
   textAdaptGptResponse,
   replaceEditorVariable
 } from '@fastgpt/global/core/workflow/runtime/utils';
-import { getSystemPluginCb } from '../../../../../plugins/register';
 import { ContentTypes } from '@fastgpt/global/core/workflow/constants';
 import { uploadFileFromBase64Img } from '../../../../common/file/gridfs/controller';
 import { ReadFileBaseUrl } from '@fastgpt/global/common/file/constants';
@@ -209,7 +208,7 @@ export const dispatchHttp468Request = async (props: HttpRequestProps): Promise<H
 
   try {
     const { formatResponse, rawResponse } = await (async () => {
-      const systemPluginCb = await getSystemPluginCb();
+      const systemPluginCb = global.systemPluginCb;
       if (systemPluginCb[httpReqUrl]) {
         const pluginResult = await replaceSystemPluginResponse({
           response: await systemPluginCb[httpReqUrl](requestBody),
@@ -395,7 +394,7 @@ async function replaceSystemPluginResponse({
         response[key] = `${ReadFileBaseUrl}/${filename}?token=${await createFileToken({
           bucketName: 'chat',
           teamId,
-          tmbId,
+          uid: tmbId,
           fileId
         })}`;
       } catch (error) {}
