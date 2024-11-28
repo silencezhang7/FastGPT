@@ -65,8 +65,10 @@ export const sendMsg = (chadId: string, msg: ChatSiteItemType) => {
   addLog.info('服务端发送消息', { size: global.registerSocket.size });
   if (global.registerSocket.has(chadId)) {
     global.registerSocket.get(chadId)?.socket.send(msg);
+    return true;
   } else {
     addLog.error('服务端发送消息失败', { size: global.registerSocket.size });
+    return false;
   }
 };
 

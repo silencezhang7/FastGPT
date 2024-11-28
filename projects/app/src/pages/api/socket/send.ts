@@ -87,7 +87,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     obj: ChatRoleEnum.System,
     value: context
   };
-  sendMsg(chatId, message);
+  const result = sendMsg(chatId, message);
   if (save === 'true') {
     saveMessage({
       chatId,
@@ -100,11 +100,30 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       ],
       shareId
     }).then();
+    if (result) {
+      return jsonRes(res, {
+        code: 200,
+        message: '消息发送成功'
+      });
+    } else {
+      return jsonRes(res, {
+        code: 200,
+        message: '消息socket发送失败，入库成功，请刷新页面查看'
+      });
+    }
+  } else {
+    if (result) {
+      return jsonRes(res, {
+        code: 200,
+        message: '消息发送成功，暂不入库'
+      });
+    } else {
+      return jsonRes(res, {
+        code: 500,
+        message: 'socket error'
+      });
+    }
   }
-  return jsonRes<any>(res, {
-    code: 200,
-    data: 'ok'
-  });
 }
 
 const saveMessage = async ({
