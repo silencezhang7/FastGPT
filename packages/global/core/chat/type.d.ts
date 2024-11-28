@@ -58,9 +58,14 @@ export type UserChatItemType = {
   value: UserChatItemValueItemType[];
 };
 export type SystemChatItemValueItemType = {
-  type: ChatItemValueTypeEnum.text;
+  type: ChatItemValueTypeEnum.text | ChatItemValueTypeEnum.file;
   text?: {
     content: string;
+  };
+  file?: {
+    type: `${ChatFileTypeEnum}`;
+    name?: string;
+    url: string;
   };
 };
 export type SystemChatItemType = {

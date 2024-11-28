@@ -1,12 +1,12 @@
 import React, {
-  useCallback,
-  useRef,
-  useState,
-  useMemo,
-  forwardRef,
-  useImperativeHandle,
   ForwardedRef,
-  useEffect
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState
 } from 'react';
 import Script from 'next/script';
 import type {
@@ -16,8 +16,8 @@ import type {
 } from '@fastgpt/global/core/chat/type.d';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import { getErrText } from '@fastgpt/global/common/error/utils';
-import { Box, Flex, Checkbox, BoxProps } from '@chakra-ui/react';
-import { EventNameEnum, eventBus } from '@/web/common/utils/eventbus';
+import { Box, BoxProps, Checkbox, Flex } from '@chakra-ui/react';
+import { eventBus, EventNameEnum } from '@/web/common/utils/eventbus';
 import { chats2GPTMessages } from '@fastgpt/global/core/chat/adapt';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
@@ -34,9 +34,9 @@ import MyTooltip from '@fastgpt/web/components/common/MyTooltip';
 
 import { postQuestionGuide } from '@/web/core/ai/api';
 import type {
-  ComponentRef,
-  ChatBoxInputType,
   ChatBoxInputFormType,
+  ChatBoxInputType,
+  ComponentRef,
   SendPromptFnType
 } from './type.d';
 import type { StartChatFnProps, generatingMessageProps } from '../type';
@@ -71,6 +71,7 @@ import { formatTimeToChatItemTime } from '@fastgpt/global/common/string/time';
 import dayjs from 'dayjs';
 import { getWebReqUrl } from '@fastgpt/web/common/system/utils';
 import ChatDecorate from '@/components/ChatDecorate';
+import ChatSocket from '@/components/ChatSocket';
 
 const ResponseTags = dynamic(() => import('./components/ResponseTags'));
 const FeedbackModal = dynamic(() => import('./components/FeedbackModal'));
@@ -894,6 +895,7 @@ const ChatBox = (
         px={[4, 0]}
         pb={3}
       >
+        {chatId && <ChatSocket />}
         <Box id="chat-container" maxW={['100%', '92%']} h={'100%'} mx={'auto'}>
           {showEmpty && <Empty />}
           {!!welcomeText && <WelcomeBox welcomeText={welcomeText} />}
@@ -923,6 +925,16 @@ const ChatBox = (
                       onDelete={delOneMessage(item.dataId)}
                       isLastChild={index === chatHistories.length - 1}
                     />
+                  )}
+                  {item.obj === ChatRoleEnum.System && (
+                    <>
+                      <ChatItem
+                        type={item.obj}
+                        avatar={appAvatar}
+                        chat={item}
+                        isLastChild={index === chatHistories.length - 1}
+                      />
+                    </>
                   )}
                   {item.obj === ChatRoleEnum.AI && (
                     <>

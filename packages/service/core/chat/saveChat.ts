@@ -1,15 +1,10 @@
 import type {
   AIChatItemType,
-  ChatItemType,
+  SystemChatItemType,
   UserChatItemType
 } from '@fastgpt/global/core/chat/type.d';
-import axios from 'axios';
 import { MongoApp } from '../app/schema';
-import {
-  ChatItemValueTypeEnum,
-  ChatRoleEnum,
-  ChatSourceEnum
-} from '@fastgpt/global/core/chat/constants';
+import { ChatItemValueTypeEnum, ChatRoleEnum } from '@fastgpt/global/core/chat/constants';
 import { MongoChatItem } from './chatItemSchema';
 import { MongoChat } from './chatSchema';
 import { addLog } from '../../common/system/log';
@@ -33,7 +28,9 @@ type Props = {
   source: string;
   shareId?: string;
   outLinkUid?: string;
-  content: [UserChatItemType & { dataId?: string }, AIChatItemType & { dataId?: string }];
+  content:
+    | [UserChatItemType & { dataId?: string }, AIChatItemType & { dataId?: string }]
+    | [SystemChatItemType & { dataId?: string }];
   metadata?: Record<string, any>;
 };
 
@@ -73,7 +70,7 @@ export async function saveChat({
     });
 
     await mongoSessionRun(async (session) => {
-      const [{ _id: chatItemIdHuman }, { _id: chatItemIdAi }] = await MongoChatItem.insertMany(
+      const result = await MongoChatItem.insertMany(
         content.map((item) => ({
           chatId,
           teamId,
@@ -111,13 +108,15 @@ export async function saveChat({
           upsert: true
         }
       );
-
-      pushChatLog({
-        chatId,
-        chatItemIdHuman: String(chatItemIdHuman),
-        chatItemIdAi: String(chatItemIdAi),
-        appId
-      });
+      if (result && result.length == 2) {
+        const [chatItemIdHuman, chatItemIdAi] = result.map((item) => item._id);
+        pushChatLog({
+          chatId,
+          chatItemIdHuman: String(chatItemIdHuman),
+          chatItemIdAi: String(chatItemIdAi),
+          appId
+        });
+      }
     });
 
     if (isUpdateUseTime) {

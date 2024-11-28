@@ -1,5 +1,5 @@
 import { Box, BoxProps, Card, Flex } from '@chakra-ui/react';
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import ChatController, { type ChatControllerProps } from './ChatController';
 import ChatAvatar from './ChatAvatar';
 import { MessageCardStyle } from '../constants';
@@ -25,6 +25,7 @@ import { isEqual } from 'lodash';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
 import { formatTimeToChatItemTime } from '@fastgpt/global/common/string/time';
 import dayjs from 'dayjs';
+import HttpResponseBpx from '@/components/core/chat/components/HttpResponseBpx';
 
 const colorMap = {
   [ChatStatusEnum.loading]: {
@@ -52,7 +53,7 @@ type BasicProps = {
 } & ChatControllerProps;
 
 type Props = BasicProps & {
-  type: ChatRoleEnum.Human | ChatRoleEnum.AI;
+  type: ChatRoleEnum.Human | ChatRoleEnum.AI | ChatRoleEnum.System;
 };
 
 const RenderQuestionGuide = ({ questionGuides }: { questionGuides: string[] }) => {
@@ -96,6 +97,40 @@ const AIContentCard = React.memo(function AIContentCard({
 
         return (
           <AIResponseBox
+            key={key}
+            value={value}
+            isLastResponseValue={isLastChild && i === chatValue.length - 1}
+            isChatting={isChatting}
+          />
+        );
+      })}
+      {isLastChild && questionGuides.length > 0 && (
+        <RenderQuestionGuide questionGuides={questionGuides} />
+      )}
+    </Flex>
+  );
+});
+
+const SystemContentCard = React.memo(function SystemContentCard({
+  chatValue,
+  dataId,
+  isLastChild,
+  isChatting,
+  questionGuides
+}: {
+  dataId: string;
+  chatValue: ChatItemValueItemType[];
+  isLastChild: boolean;
+  isChatting: boolean;
+  questionGuides: string[];
+}) {
+  return (
+    <Flex flexDirection={'column'} gap={2}>
+      {chatValue.map((value, i) => {
+        const key = `${dataId}-ai-${i}`;
+
+        return (
+          <HttpResponseBpx
             key={key}
             value={value}
             isLastResponseValue={isLastChild && i === chatValue.length - 1}
@@ -284,6 +319,15 @@ const ChatItem = (props: Props) => {
             {type === ChatRoleEnum.Human && <HumanContentCard chatValue={value} />}
             {type === ChatRoleEnum.AI && (
               <AIContentCard
+                chatValue={value}
+                dataId={chat.dataId}
+                isLastChild={isLastChild && i === splitAiResponseResults.length - 1}
+                isChatting={isChatting}
+                questionGuides={questionGuides}
+              />
+            )}
+            {type === ChatRoleEnum.System && (
+              <SystemContentCard
                 chatValue={value}
                 dataId={chat.dataId}
                 isLastChild={isLastChild && i === splitAiResponseResults.length - 1}
