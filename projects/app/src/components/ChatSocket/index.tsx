@@ -3,9 +3,11 @@ import io from 'socket.io-client';
 import { ChatSiteItemType } from '@fastgpt/global/core/chat/type';
 import { useContextSelector } from 'use-context-selector';
 import { ChatBoxContext } from '@/components/core/chat/ChatContainer/ChatBox/Provider';
+import {ChatRecordContext} from "@/web/core/chat/context/chatRecordContext";
 
 const ChatSocket = () => {
-  const { isChatting, chatId, setChatHistories } = useContextSelector(ChatBoxContext, (v) => v);
+  const { isChatting, chatId} = useContextSelector(ChatBoxContext, (v) => v);
+  const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
   const [messages, setMessages] = useState<ChatSiteItemType[]>([]);
   useEffect(() => {
     const socket = io({
@@ -32,17 +34,17 @@ const ChatSocket = () => {
       console.log('组件开始销毁，客户端断开连接');
       socket.disconnect();
     };
-  }, [chatId, setChatHistories]);
+  }, [chatId, setChatRecords]);
   useEffect(() => {
     while (!isChatting && messages.length > 0) {
       const msg = messages.pop();
       if (msg) {
-        setChatHistories((state) => {
+        setChatRecords((state) => {
           return [...state, msg];
         });
       }
     }
-  }, [messages, isChatting, setChatHistories]);
+  }, [messages, isChatting, setChatRecords]);
   console.log('服务端发送的消息集合', messages);
   return <></>;
 };

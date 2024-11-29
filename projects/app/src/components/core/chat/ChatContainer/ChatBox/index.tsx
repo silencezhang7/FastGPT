@@ -139,21 +139,6 @@ const ChatBox = ({
   const [adminMarkData, setAdminMarkData] = useState<AdminMarkType & { dataId: string }>();
   const [questionGuides, setQuestionGuide] = useState<string[]>([]);
 
-  const {
-    welcomeText,
-    variableList,
-    allVariableList,
-    questionGuide,
-    startSegmentedAudio,
-    finishSegmentedAudio,
-    setAudioPlayingChatId,
-    splitText2Audio,
-    chatHistories,
-    setChatHistories,
-    variablesForm,
-    isChatting,
-    chatDecorateConfig
-  } = useContextSelector(ChatBoxContext, (v) => v);
   const appAvatar = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.app?.avatar);
   const userAvatar = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.userAvatar);
   const ChatBoxRef = useContextSelector(ChatItemContext, (v) => v.ChatBoxRef);
@@ -180,6 +165,7 @@ const ChatBox = ({
   const setAudioPlayingChatId = useContextSelector(ChatBoxContext, (v) => v.setAudioPlayingChatId);
   const splitText2Audio = useContextSelector(ChatBoxContext, (v) => v.splitText2Audio);
   const isChatting = useContextSelector(ChatBoxContext, (v) => v.isChatting);
+  const chatDecorateConfig = useContextSelector(ChatBoxContext, (v) => v.chatDecorateConfig);
 
   // Workflow running, there are user input or selection
   const isInteractive = useMemo(() => checkIsInteractiveByHistories(chatRecords), [chatRecords]);
@@ -943,7 +929,7 @@ const ChatBox = ({
                         type={item.obj}
                         avatar={appAvatar}
                         chat={item}
-                        isLastChild={index === chatHistories.length - 1}
+                        isLastChild={index === chatRecords.length - 1}
                       />
                     </>
                   )}
@@ -1069,7 +1055,7 @@ const ChatBox = ({
     >
       <Script src={getWebReqUrl('/js/html2pdf.bundle.min.js')} strategy="lazyOnload"></Script>
       {/* chat box container */}
-      {chatHistories.length <= 0 && (
+      {chatRecords.length <= 0 && (
         <ChatDecorate onSetChatInput={setChatInput} chatDecorateConfig={chatDecorateConfig} />
       )}
       {RenderRecords}

@@ -155,7 +155,7 @@ const Provider = ({
     whisperConfig = defaultWhisperConfig,
     chatInputGuide = defaultChatInputGuideConfig,
     fileSelectConfig = defaultAppSelectFileConfig,
-    chatDecorateConfig = defaultAppChatDecorateConfigType
+    chatDecorateConfig = defaultAppChatDecorateConfigType,
 	  autoExecute = defaultAutoExecuteConfig
   } = useMemo(() => chatConfig, [chatConfig]);
 
