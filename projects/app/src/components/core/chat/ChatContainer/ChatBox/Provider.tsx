@@ -168,9 +168,13 @@ const Provider = ({
     (v) => v.chatBoxData?.app?.chatConfig?.fileSelectConfig ?? defaultAppSelectFileConfig
   );
 
+  const chatDecorateConfig = useContextSelector(
+    ChatItemContext,
+    (v) => v.chatBoxData?.app?.chatConfig?.chatDecorateConfig ?? defaultAppChatDecorateConfigType
+  );
+
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
-  const chatDecorateConfig = useContextSelector(ChatBoxContext, (v) => v.chatDecorateConfig);
 
   // segment audio
   const [audioPlayingChatId, setAudioPlayingChatId] = useState<string>();
