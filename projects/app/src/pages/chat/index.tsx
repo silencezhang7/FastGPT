@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import NextHead from '@/components/common/NextHead';
 import { useRouter } from 'next/router';
 import { getInitChatInfo } from '@/web/core/chat/api';
@@ -24,7 +24,7 @@ import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { useMount } from 'ahooks';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 
-import { defaultChatData, GetChatTypeEnum } from '@/global/core/chat/constants';
+import { GetChatTypeEnum } from '@/global/core/chat/constants';
 import ChatContextProvider, { ChatContext } from '@/web/core/chat/context/chatContext';
 import { AppListItemType } from '@fastgpt/global/core/app/type';
 import { useContextSelector } from 'use-context-selector';
@@ -36,7 +36,6 @@ import ChatItemContextProvider, { ChatItemContext } from '@/web/core/chat/contex
 import ChatRecordContextProvider, {
   ChatRecordContext
 } from '@/web/core/chat/context/chatRecordContext';
-import { InitChatResponse } from '@/global/core/chat/api';
 
 const CustomPluginRunBox = dynamic(() => import('./components/CustomPluginRunBox'));
 
@@ -56,22 +55,23 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   const resetVariables = useContextSelector(ChatItemContext, (v) => v.resetVariables);
   const isPlugin = useContextSelector(ChatItemContext, (v) => v.isPlugin);
+  const chatBoxData = useContextSelector(ChatItemContext, (v) => v.chatBoxData);
   const setChatBoxData = useContextSelector(ChatItemContext, (v) => v.setChatBoxData);
 
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const totalRecordsCount = useContextSelector(ChatRecordContext, (v) => v.totalRecordsCount);
 
   // Load chat init data
-  const [chatData, setChatData] = useState<InitChatResponse>(defaultChatData);
-  const { loading: isLoading } = useRequest2(
+  const { loading } = useRequest2(
     async () => {
       if (!appId || forbidLoadChat.current) return;
 
       const res = await getInitChatInfo({ appId, chatId });
       res.userAvatar = userInfo?.avatar;
 
-      setChatData(res);
+      // Wait for state update to complete
       setChatBoxData(res);
+
       // reset chat variables
       resetVariables({
         variables: res.variables
@@ -127,17 +127,15 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
       // new chat
       onUpdateHistoryTitle({ chatId, newTitle });
       // update chat window
-      setChatData((state) => ({
+      setChatBoxData((state) => ({
         ...state,
         title: newTitle
       }));
 
       return { responseText, responseData, isNewChat: forbidLoadChat.current };
     },
-    [chatId, appId, onUpdateHistoryTitle, forbidLoadChat]
+    [appId, chatId, onUpdateHistoryTitle, setChatBoxData, forbidLoadChat]
   );
-  const loading = isLoading;
-
   const RenderHistorySlider = useMemo(() => {
     const Children = (
       <ChatHistorySlider confirmClearText={t('common:core.chat.Confirm to clear history')} />
@@ -161,7 +159,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
 
   return (
     <Flex h={'100%'}>
-      <NextHead title={chatData.app.name} icon={chatData.app.avatar}></NextHead>
+      <NextHead title={chatBoxData.app.name} icon={chatBoxData.app.avatar}></NextHead>
       {/* pc show myself apps */}
       {isPc && (
         <Box borderRight={theme.borders.base} w={'220px'} flexShrink={0}>
@@ -185,7 +183,6 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
             <ChatHeader
               totalRecordsCount={totalRecordsCount}
               apps={myApps}
-              chatData={chatData}
               history={chatRecords}
               showHistory
               onRouteToAppDetail={() => router.push(`/app/detail?appId=${appId}`)}
@@ -212,6 +209,7 @@ const Chat = ({ myApps }: { myApps: AppListItemType[] }) => {
                   chatType={'chat'}
                   showRawSource
                   showNodeStatus
+                  isReady={!loading}
                 />
               )}
             </Box>

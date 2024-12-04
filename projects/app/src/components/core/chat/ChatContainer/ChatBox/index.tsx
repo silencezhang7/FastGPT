@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
   useMemo,
-  useImperativeHandle,
+  useImperativeHandle
 } from 'react';
 import Script from 'next/script';
 import type {
@@ -92,7 +92,7 @@ enum FeedbackTypeEnum {
 
 type Props = OutLinkChatAuthProps &
   ChatProviderProps & {
-    isReady?: boolean;
+    isReady: boolean;
     feedbackType?: `${FeedbackTypeEnum}`;
     showMarkIcon?: boolean; // admin mark dataset
     showVoiceIcon?: boolean;
@@ -141,15 +141,12 @@ const ChatBox = ({
 
   const appAvatar = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.app?.avatar);
   const userAvatar = useContextSelector(ChatItemContext, (v) => v.chatBoxData?.userAvatar);
+  const chatBoxData = useContextSelector(ChatItemContext, (v) => v.chatBoxData);
   const ChatBoxRef = useContextSelector(ChatItemContext, (v) => v.ChatBoxRef);
   const variablesForm = useContextSelector(ChatItemContext, (v) => v.variablesForm);
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
   const isChatRecordsLoaded = useContextSelector(ChatRecordContext, (v) => v.isChatRecordsLoaded);
-  const setIsChatRecordsLoaded = useContextSelector(
-    ChatRecordContext,
-    (v) => v.setIsChatRecordsLoaded
-  );
   const ScrollData = useContextSelector(ChatRecordContext, (v) => v.ScrollData);
 
   const appId = useContextSelector(ChatBoxContext, (v) => v.appId);
@@ -159,7 +156,6 @@ const ChatBox = ({
   const variableList = useContextSelector(ChatBoxContext, (v) => v.variableList);
   const allVariableList = useContextSelector(ChatBoxContext, (v) => v.allVariableList);
   const questionGuide = useContextSelector(ChatBoxContext, (v) => v.questionGuide);
-  const autoExecute = useContextSelector(ChatBoxContext, (v) => v.autoExecute);
   const startSegmentedAudio = useContextSelector(ChatBoxContext, (v) => v.startSegmentedAudio);
   const finishSegmentedAudio = useContextSelector(ChatBoxContext, (v) => v.finishSegmentedAudio);
   const setAudioPlayingChatId = useContextSelector(ChatBoxContext, (v) => v.setAudioPlayingChatId);
@@ -180,7 +176,9 @@ const ChatBox = ({
   });
   const { setValue, watch } = chatForm;
   const chatStartedWatch = watch('chatStarted');
-  const chatStarted = chatStartedWatch || chatRecords.length > 0 || variableList.length === 0;
+  const chatStarted =
+    chatBoxData?.appId === appId &&
+    (chatStartedWatch || chatRecords.length > 0 || variableList.length === 0);
 
   // 滚动到底部
   const scrollToBottom = useMemoizedFn((behavior: 'smooth' | 'auto' = 'smooth', delay = 0) => {
@@ -697,12 +695,9 @@ const ChatBox = ({
         updateChatUserFeedback({
           appId,
           chatId,
-          teamId,
-          teamToken,
           dataId: chat.dataId,
-          shareId,
-          outLinkUid,
-          userGoodFeedback: isGoodFeedback ? undefined : 'yes'
+          userGoodFeedback: isGoodFeedback ? undefined : 'yes',
+          ...outLinkAuthData
         });
       } catch (error) {}
     };
@@ -718,11 +713,10 @@ const ChatBox = ({
       );
       updateChatUserFeedback({
         appId,
-        teamId,
-        teamToken,
         chatId,
         dataId: chat.dataId,
-        userGoodFeedback: undefined
+        userGoodFeedback: undefined,
+        ...outLinkAuthData
       });
     };
   });
@@ -747,10 +741,7 @@ const ChatBox = ({
             appId,
             chatId,
             dataId: chat.dataId,
-            shareId,
-            teamId,
-            teamToken,
-            outLinkUid
+            ...outLinkAuthData
           });
         } catch (error) {}
       };
@@ -823,9 +814,9 @@ const ChatBox = ({
     setQuestionGuide([]);
     setValue('chatStarted', false);
     abortRequest('leave');
-  }, [router.query, setValue, chatId]);
+  }, [abortRequest, setValue]);
 
-  // add listener
+  // Add listener
   useEffect(() => {
     const windowMessage = ({ data }: MessageEvent<{ type: 'sendPrompt'; text: string }>) => {
       if (data?.type === 'sendPrompt' && data?.text) {
@@ -856,17 +847,24 @@ const ChatBox = ({
   useEffect(() => {
     if (
       isReady &&
-      autoExecute.open &&
+      chatBoxData?.app?.chatConfig?.autoExecute?.open &&
       chatStarted &&
       chatRecords.length === 0 &&
       isChatRecordsLoaded
     ) {
       sendPrompt({
-        text: autoExecute.defaultPrompt || 'AUTO_EXECUTE',
+        text: chatBoxData?.app?.chatConfig?.autoExecute?.defaultPrompt || 'AUTO_EXECUTE',
         hideInUI: true
       });
     }
-  }, [isReady, chatStarted, autoExecute?.open, chatRecords, isChatRecordsLoaded]);
+  }, [
+    isReady,
+    chatStarted,
+    chatRecords.length,
+    isChatRecordsLoaded,
+    sendPrompt,
+    chatBoxData?.app?.chatConfig?.autoExecute
+  ]);
 
   // output data
   useImperativeHandle(ChatBoxRef, () => ({
@@ -874,7 +872,6 @@ const ChatBox = ({
       abortRequest();
 
       setChatRecords([]);
-      setIsChatRecordsLoaded(false);
       setValue('chatStarted', false);
     },
     scrollToBottom(behavior = 'auto') {
@@ -1073,12 +1070,8 @@ const ChatBox = ({
       {!!feedbackId && chatId && (
         <FeedbackModal
           appId={appId}
-          teamId={teamId}
-          teamToken={teamToken}
           chatId={chatId}
           dataId={feedbackId}
-          shareId={shareId}
-          outLinkUid={outLinkUid}
           onClose={() => setFeedbackId(undefined)}
           onSuccess={(content: string) => {
             setChatRecords((state) =>

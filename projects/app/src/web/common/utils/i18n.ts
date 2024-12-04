@@ -3,7 +3,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export enum LangEnum {
   'zh_CN' = 'zh-CN',
-  'zh_TW' = 'zh-TW',
+  'zh_Hant' = 'zh-Hant',
   'en' = 'en'
 }
 export const langMap = {
@@ -15,12 +15,13 @@ export const langMap = {
     label: '简体中文',
     avatar: 'common/language/China'
   },
-  [LangEnum.zh_TW]: {
-    label: '中文(台湾)',
+  [LangEnum.zh_Hant]: {
+    label: '繁体中文',
     avatar: 'common/language/China'
   }
 };
 
 export const serviceSideProps = (content: any, ns: I18nNsType = []) => {
-  return serverSideTranslations(content.locale, ['common', 'error', ...ns], null, content.locales);
+  const lang = content.req?.cookies?.NEXT_LOCALE || content.locale;
+  return serverSideTranslations(lang, ['common', 'error', ...ns], null, content.locales);
 };

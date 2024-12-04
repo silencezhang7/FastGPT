@@ -84,10 +84,10 @@ const OutLink = (props: Props) => {
 
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const totalRecordsCount = useContextSelector(ChatRecordContext, (v) => v.totalRecordsCount);
+  const isChatRecordsLoaded = useContextSelector(ChatRecordContext, (v) => v.isChatRecordsLoaded);
 
   const initSign = useRef(false);
-  const [chatData, setChatData] = useState<InitChatResponse>(defaultChatData);
-  const { loading: isLoading } = useRequest2(
+  const { data, loading } = useRequest2(
     async () => {
       const shareId = outLinkAuthData.shareId;
       const outLinkUid = outLinkAuthData.outLinkUid;
@@ -99,24 +99,17 @@ const OutLink = (props: Props) => {
         outLinkUid
       });
 
-      setChatData(res);
       setChatBoxData(res);
+
       resetVariables({
         variables: res.variables
       });
+
+      return res;
     },
     {
       manual: false,
       refreshDeps: [shareId, outLinkAuthData, chatId],
-      onSuccess() {
-        // send init message
-        if (!initSign.current) {
-          initSign.current = true;
-          if (window !== top) {
-            window.top?.postMessage({ type: 'shareChatReady' }, '*');
-          }
-        }
-      },
       onError(e: any) {
         if (chatId) {
           onChangeChatId('');
@@ -127,6 +120,14 @@ const OutLink = (props: Props) => {
       }
     }
   );
+  useEffect(() => {
+    if (initSign.current === false && data && isChatRecordsLoaded) {
+      initSign.current = true;
+      if (window !== top) {
+        window.top?.postMessage({ type: 'shareChatReady' }, '*');
+      }
+    }
+  }, [data, isChatRecordsLoaded]);
 
   const startChat = useCallback(
     async ({
@@ -174,7 +175,7 @@ const OutLink = (props: Props) => {
       onUpdateHistoryTitle({ chatId: completionChatId, newTitle });
 
       // update chat window
-      setChatData((state) => ({
+      setChatBoxData((state) => ({
         ...state,
         title: newTitle
       }));
@@ -193,7 +194,15 @@ const OutLink = (props: Props) => {
 
       return { responseText, responseData, isNewChat: forbidLoadChat.current };
     },
-    [chatId, customVariables, outLinkAuthData, onUpdateHistoryTitle, forbidLoadChat, onChangeChatId]
+    [
+      chatId,
+      customVariables,
+      outLinkAuthData,
+      onUpdateHistoryTitle,
+      setChatBoxData,
+      forbidLoadChat,
+      onChangeChatId
+    ]
   );
 
   // window init
@@ -229,8 +238,6 @@ const OutLink = (props: Props) => {
     );
   }, [isOpenSlider, isPc, onCloseSlider, showHistory, t]);
 
-  const loading = isLoading;
-
   return (
     <>
       <NextHead title={props.appName || 'AI'} desc={props.appIntro} icon={props.appAvatar} />
@@ -254,7 +261,6 @@ const OutLink = (props: Props) => {
             {/* header */}
             {showHead === '1' ? (
               <ChatHeader
-                chatData={chatData}
                 history={chatRecords}
                 totalRecordsCount={totalRecordsCount}
                 showHistory={showHistory === '1'}
@@ -272,6 +278,7 @@ const OutLink = (props: Props) => {
                 />
               ) : (
                 <ChatBox
+                  isReady={!loading}
                   appId={appId}
                   chatId={chatId}
                   outLinkAuthData={outLinkAuthData}
@@ -295,8 +302,6 @@ const Render = (props: Props) => {
   const { localUId, loaded } = useShareChatStore();
   const { source, chatId, setSource, setAppId, setOutLinkAuthData } = useChatStore();
 
-  const [isLoaded, setIsLoaded] = useState(false);
-
   const chatHistoryProviderParams = useMemo(() => {
     return { shareId, outLinkUid: authToken || customUid || localUId };
   }, [authToken, customUid, localUId, shareId]);
@@ -311,11 +316,8 @@ const Render = (props: Props) => {
   }, [appId, chatHistoryProviderParams.outLinkUid, chatId, shareId]);
 
   useMount(() => {
-    setIsLoaded(true);
-
     setSource('share');
   });
-  const systemLoaded = isLoaded && loaded && chatHistoryProviderParams.outLinkUid;
 
   // Set outLinkAuthData
   useEffect(() => {
