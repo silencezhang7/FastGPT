@@ -3,7 +3,6 @@ import type {
   SystemChatItemType,
   UserChatItemType
 } from '@fastgpt/global/core/chat/type.d';
-import type { AIChatItemType, UserChatItemType } from '@fastgpt/global/core/chat/type.d';
 import { MongoApp } from '../app/schema';
 import { ChatItemValueTypeEnum, ChatRoleEnum } from '@fastgpt/global/core/chat/constants';
 import { MongoChatItem } from './chatItemSchema';

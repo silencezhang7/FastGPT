@@ -237,7 +237,8 @@ export const iconPaths = {
   'core/workflow/template/datasetSearch': () =>
     import('./icons/core/workflow/template/datasetSearch.svg'),
   'core/workflow/template/datasource': () =>
-    import('./icons/core/workflow/template/datasource.svg'),
+    import('./icons/core/workflow/template/datasetSearch.svg'),
+  'core/workflow/template/WeCom': () => import('./icons/core/workflow/template/WeCom.svg'),
   'core/workflow/template/historyToFile': () =>
     import('./icons/core/workflow/template/historyToFile.svg'),
   'core/workflow/template/duckduckgo': () =>

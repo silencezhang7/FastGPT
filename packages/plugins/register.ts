@@ -20,6 +20,7 @@ const packagePluginList = [
   'databaseConnection',
   'Doc2X',
   'Doc2X/PDF2text',
+  'WeCom'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];
