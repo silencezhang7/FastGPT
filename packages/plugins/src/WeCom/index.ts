@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import axios from 'axios';
 
-const redis = new Redis(3009, 'redis');
+const redis = new Redis('redis');
 
 type Props = {
   corpid: string;
