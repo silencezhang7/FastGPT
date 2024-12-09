@@ -266,6 +266,22 @@
               "b9Mb1i1p8N5K",
               "ovoEyU3oZVaJ"
             ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileId",
+            "label": "fileId",
+            "isToolOutput": true,
+            "description": "文件id",
+            "required": true,
+            "value": [
+              "b9Mb1i1p8N5K",
+              "pw3P0XdOhmqK"
+            ]
           }
         ],
         "outputs": []
@@ -724,6 +740,13 @@
             "type": "dynamic",
             "key": "fileViewUrl",
             "label": "fileViewUrl"
+          },
+          {
+            "id": "pw3P0XdOhmqK",
+            "valueType": "string",
+            "type": "dynamic",
+            "key": "fileId",
+            "label": "fileId"
           }
         ]
       }
@@ -741,26 +764,6 @@
         "sourceHandle": "b9Mb1i1p8N5K-source-right",
         "targetHandle": "pluginOutput-target-left"
       }
-    ],
-    "chatConfig": {
-      "welcomeText": "",
-      "variables": [],
-      "questionGuide": false,
-      "ttsConfig": {
-        "type": "web"
-      },
-      "whisperConfig": {
-        "open": false,
-        "autoSend": false,
-        "autoTTSResponse": false
-      },
-      "chatInputGuide": {
-        "open": false,
-        "textList": [],
-        "customUrl": ""
-      },
-      "instruction": "对话历史记录转markdown文件，返回值：fileUrl，markdown格式原文",
-      "_id": "670a23b31957c5b9899b4a4d"
-    }
+    ]
   }
 }

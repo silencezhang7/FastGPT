@@ -29,25 +29,28 @@ type Props = {
 };
 
 type Response = Promise<{
-  fileUrl: string; // 修改为 fileUrl
+  fileUrl: string;
   markdownContent: string;
   fileViewUrl: string;
+  fileId: string;
 }>;
 
 const handleError = (
   error: unknown
-): { fileUrl: string; markdownContent: string; fileViewUrl: string } => {
+): { fileUrl: string; markdownContent: string; fileViewUrl: string; fileId: string } => {
   if (error instanceof Error) {
     return {
       fileUrl: `错误信息: ${error.message}`,
       markdownContent: `错误信息: ${error.message}`,
-      fileViewUrl: `错误信息: ${error.message}`
+      fileViewUrl: `错误信息: ${error.message}`,
+      fileId: `错误信息: ${error.message}`
     };
   } else {
     return {
       fileUrl: `未知错误`,
       markdownContent: `未知错误`,
-      fileViewUrl: `未知错误`
+      fileViewUrl: `未知错误`,
+      fileId: `未知错误`
     };
   }
 };
@@ -118,7 +121,8 @@ const main = async ({
     return {
       fileUrl: fileUrl,
       markdownContent: markdownContent,
-      fileViewUrl: fileViewHost + btoa(fileUrl)
+      fileViewUrl: fileViewHost + btoa(fileUrl),
+      fileId: fileId
     };
   } catch (error) {
     return handleError(error);
