@@ -22,9 +22,7 @@ import { EditorVariablePickerType } from '@fastgpt/web/components/common/Textare
 import {
   formatEditorVariablePickerIcon,
   getAppChatConfig,
-  getGuideModule,
-  isValidArrayReferenceValue,
-  isValidReferenceValue
+  getGuideModule
 } from '@fastgpt/global/core/workflow/utils';
 import { TFunction } from 'next-i18next';
 import {
@@ -552,12 +550,12 @@ export const getLatestNodeTemplate = (
 export const compareSnapshot = (
   snapshot1: {
     nodes?: Node[];
-    edges: Edge<any>[] | undefined;
+    edges?: Edge<any>[] | undefined;
     chatConfig?: AppChatConfigType;
   },
   snapshot2: {
     nodes?: Node[];
-    edges: Edge<any>[];
+    edges?: Edge<any>[];
     chatConfig?: AppChatConfigType;
   }
 ) => {
@@ -565,6 +563,8 @@ export const compareSnapshot = (
   const clone2 = cloneDeep(snapshot2);
 
   if (!clone1.nodes || !clone2.nodes) return false;
+  if (!clone1.edges || !clone2.edges) return false;
+
   const formatEdge = (edges: Edge[] | undefined) => {
     if (!edges) return [];
     return edges.map((edge) => ({

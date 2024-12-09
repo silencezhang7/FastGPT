@@ -3,7 +3,7 @@ import {
   AppFileSelectConfigType,
   AppWhisperConfigType,
   AppChatDecorateConfigType,
-	AppAutoExecuteConfigType
+  AppAutoExecuteConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -57,3 +57,5 @@ export enum AppTemplateTypeEnum {
   roleplay = 'roleplay',
   officeServices = 'office-services'
 }
+
+export const defaultDatasetMaxTokens = 16000;

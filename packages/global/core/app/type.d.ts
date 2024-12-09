@@ -179,3 +179,9 @@ export type AppChatDecorateConfigType = {
   robotTitle: string;
   problemTexts: string[];
 };
+
+export type SystemPluginListItemType = {
+  _id: string;
+  name: string;
+  avatar: string;
+};

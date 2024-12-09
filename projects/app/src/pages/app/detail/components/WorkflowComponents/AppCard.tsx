@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { Box, Flex, HStack, useDisclosure } from '@chakra-ui/react';
 import { useContextSelector } from 'use-context-selector';
-import { AppContext, TabEnum } from '../context';
+import { AppContext } from '../context';
 import { useTranslation } from 'next-i18next';
 import Avatar from '@fastgpt/web/components/common/Avatar';
 import MyIcon from '@fastgpt/web/components/common/Icon';
@@ -19,18 +19,14 @@ import { useSystemStore } from '@/web/common/system/useSystemStore';
 
 const ImportSettings = dynamic(() => import('./Flow/ImportSettings'));
 
-const AppCard = ({
-  showSaveStatus,
-  isPublished
-}: {
-  showSaveStatus: boolean;
-  isPublished: boolean;
-}) => {
+const AppCard = ({ showSaveStatus, isSaved }: { showSaveStatus: boolean; isSaved: boolean }) => {
   const { t } = useTranslation();
   const { feConfigs } = useSystemStore();
 
-  const { appDetail, onOpenInfoEdit, onOpenTeamTagModal, onDelApp, currentTab } =
-    useContextSelector(AppContext, (v) => v);
+  const { appDetail, onOpenInfoEdit, onOpenTeamTagModal, onDelApp } = useContextSelector(
+    AppContext,
+    (v) => v
+  );
 
   const { isOpen: isOpenImport, onOpen: onOpenImport, onClose: onCloseImport } = useDisclosure();
 
@@ -182,16 +178,12 @@ const AppCard = ({
                 showDot
                 bg={'transparent'}
                 colorSchema={
-                  isPublished
+                  isSaved
                     ? publishStatusStyle.published.colorSchema
                     : publishStatusStyle.unPublish.colorSchema
                 }
               >
-                {t(
-                  isPublished
-                    ? publishStatusStyle.published.text
-                    : publishStatusStyle.unPublish.text
-                )}
+                {t(isSaved ? publishStatusStyle.published.text : publishStatusStyle.unPublish.text)}
               </MyTag>
             </Flex>
           )}
@@ -205,7 +197,7 @@ const AppCard = ({
     appDetail.avatar,
     appDetail.name,
     isOpenImport,
-    isPublished,
+    isSaved,
     onCloseImport,
     showSaveStatus,
     t
@@ -223,25 +215,44 @@ function ExportPopover({
 }) {
   const { t } = useTranslation();
   const { copyData } = useCopyData();
-  const { flowData2StoreDataAndCheck } = useContextSelector(WorkflowContext, (v) => v);
+  const flowData2StoreData = useContextSelector(WorkflowContext, (v) => v.flowData2StoreData);
 
-  const onExportWorkflow = useCallback(async () => {
-    const data = flowData2StoreDataAndCheck();
-    if (data) {
-      copyData(
-        JSON.stringify(
-          {
-            nodes: filterSensitiveNodesData(data.nodes),
-            edges: data.edges,
-            chatConfig: chatConfig
-          },
-          null,
-          2
-        ),
-        t('app:export_config_successful')
-      );
-    }
-  }, [chatConfig, copyData, flowData2StoreDataAndCheck, t]);
+  const onExportWorkflow = useCallback(
+    async (mode: 'copy' | 'json') => {
+      const data = flowData2StoreData();
+      if (data) {
+        if (mode === 'copy') {
+          copyData(
+            JSON.stringify(
+              {
+                nodes: filterSensitiveNodesData(data.nodes),
+                edges: data.edges,
+                chatConfig
+              },
+              null,
+              2
+            ),
+            t('app:export_config_successful')
+          );
+        } else if (mode === 'json') {
+          fileDownload({
+            text: JSON.stringify(
+              {
+                nodes: filterSensitiveNodesData(data.nodes),
+                edges: data.edges,
+                chatConfig
+              },
+              null,
+              2
+            ),
+            type: 'application/json;charset=utf-8',
+            filename: `${appName}.json`
+          });
+        }
+      }
+    },
+    [appName, chatConfig, copyData, flowData2StoreData, t]
+  );
 
   return (
     <MyPopover
@@ -269,7 +280,7 @@ function ExportPopover({
               cursor: 'pointer'
             }}
             borderRadius={'xs'}
-            onClick={onExportWorkflow}
+            onClick={() => onExportWorkflow('copy')}
           >
             <MyIcon name={'copy'} w={'1rem'} mr={2} />
             <Box fontSize={'mini'}>{t('common:common.copy_to_clipboard')}</Box>
@@ -284,25 +295,7 @@ function ExportPopover({
               cursor: 'pointer'
             }}
             borderRadius={'xs'}
-            onClick={() => {
-              const data = flowData2StoreDataAndCheck();
-
-              if (!data) return;
-
-              fileDownload({
-                text: JSON.stringify(
-                  {
-                    nodes: filterSensitiveNodesData(data.nodes),
-                    edges: data.edges,
-                    chatConfig: chatConfig
-                  },
-                  null,
-                  2
-                ),
-                type: 'application/json;charset=utf-8',
-                filename: `${appName}.json`
-              });
-            }}
+            onClick={() => onExportWorkflow('json')}
           >
             <MyIcon name={'configmap'} w={'1rem'} mr={2} />
             <Box fontSize={'mini'}>{t('common:common.export_to_json')}</Box>

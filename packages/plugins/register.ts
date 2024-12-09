@@ -42,7 +42,8 @@ export const getCommunityPlugins = () => {
       id: `${PluginSourceEnum.community}-${name}`,
       isFolder,
       parentId,
-      isActive: true
+      isActive: true,
+      isOfficial: true
     };
   });
 };
