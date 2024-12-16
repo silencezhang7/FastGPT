@@ -101,7 +101,17 @@ const PortraitCard: React.FC<{
       text: 'AD自助服务',
       backgroundImage: 'linear-gradient(to right, #6a11cb 0%, #2575fc 100%)',
       click: (text: string) => {
-        location.href = 'https://tpapi.axa.cn/accesscontrol/ad';
+        // 检查是否为移动端
+        const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (!isMobile) {
+          toast({
+            title: '系统提示',
+            description: '请在企业微信内打开',
+            status: 'warning'
+          });
+        } else {
+          location.href = 'https://tpapi.axa.cn/accesscontrol/ad';
+        }
       }
     },
     {
@@ -109,11 +119,12 @@ const PortraitCard: React.FC<{
       text: '工单进度查询',
       backgroundImage: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)',
       click: (text: string) => {
-        toast({
-          title: '系统提示',
-          description: '功能开发中，敬请期待',
-          status: 'warning'
-        });
+        // toast({
+        //   title: '系统提示',
+        //   description: '功能开发中，敬请期待',
+        //   status: 'warning'
+        // });
+        props.onSetChatInput(text);
       }
     }
   ];
@@ -154,7 +165,8 @@ const PortraitCard: React.FC<{
         width={'7.5rem'}
         style={{
           justifyContent: 'space-around',
-          boxShadow: 'none'
+          boxShadow: 'none',
+          right: '0.7.5rem'
         }}
       >
         <Stack spacing={4}>{Content}</Stack>
