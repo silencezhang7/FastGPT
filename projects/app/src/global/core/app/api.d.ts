@@ -15,6 +15,7 @@ export type AppUpdateParams = {
 };
 
 export type PostPublishAppProps = {
+  type: AppTypeEnum;
   nodes: AppSchema['modules'];
   edges: AppSchema['edges'];
   chatConfig: AppSchema['chatConfig'];
