@@ -179,6 +179,11 @@ const Provider = ({
     (v) => v.chatBoxData?.app?.chatConfig?.fileSelectConfig ?? defaultAppSelectFileConfig
   );
 
+  const chatDecorateConfig = useContextSelector(
+    ChatItemContext,
+    (v) => v.chatBoxData?.app?.chatConfig?.chatDecorateConfig ?? defaultAppChatDecorateConfigType
+  );
+
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
   const setChatRecords = useContextSelector(ChatRecordContext, (v) => v.setChatRecords);
 
@@ -256,7 +261,8 @@ const Provider = ({
     getHistoryResponseData,
     chatType,
     showRawSource,
-    showNodeStatus
+    showNodeStatus,
+    chatDecorateConfig
   };
 
   return <ChatBoxContext.Provider value={value}>{children}</ChatBoxContext.Provider>;
