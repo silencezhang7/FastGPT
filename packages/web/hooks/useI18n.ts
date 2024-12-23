@@ -1,15 +1,27 @@
-import Cookies, { CookieAttributes } from 'js-cookie';
+import Cookies from 'js-cookie';
 import { useTranslation } from 'next-i18next';
 import { LangEnum } from '../../../projects/app/src/web/common/utils/i18n';
 
-const setCookie = (key: string, value: string, options?: CookieAttributes) => {
-  Cookies.set(key, value, options);
-};
-const getCookie = (key: string) => {
-  return Cookies.get(key);
-};
-
 const LANG_KEY = 'NEXT_LOCALE';
+const isInIframe = () => {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};
+const setLang = (value: string) => {
+  if (isInIframe()) {
+    localStorage.setItem(LANG_KEY, value);
+  } else {
+    // 不在 iframe 中，同时使用 Cookie 和 localStorage
+    Cookies.set(LANG_KEY, value, { expires: 30 });
+    localStorage.setItem(LANG_KEY, value);
+  }
+};
+const getLang = () => {
+  return localStorage.getItem(LANG_KEY) || Cookies.get(LANG_KEY);
+};
 
 export const useI18nLng = () => {
   const { i18n } = useTranslation();
@@ -26,22 +38,21 @@ export const useI18nLng = () => {
 
   const onChangeLng = async (lng: string) => {
     const lang = languageMap[lng] || 'en';
+    const prevLang = getLang();
 
-    setCookie(LANG_KEY, lang, {
-      expires: 30
-    });
+    setLang(lang);
 
-    const currentLng = i18n?.language;
     await i18n?.changeLanguage?.(lang);
 
-    if (currentLng !== lang) {
+    if (!i18n.hasResourceBundle(lang, 'common') && prevLang !== lang) {
       window?.location?.reload?.();
     }
   };
 
-  const setUserDefaultLng = () => {
+  const setUserDefaultLng = (forceGetDefaultLng: boolean = false) => {
     if (!navigator || !localStorage) return;
-    if (getCookie(LANG_KEY)) return onChangeLng(getCookie(LANG_KEY) as string);
+
+    if (getLang() && !forceGetDefaultLng) return onChangeLng(getLang() as string);
 
     const lang = languageMap[navigator.language] || 'en';
 

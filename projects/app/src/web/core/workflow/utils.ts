@@ -119,6 +119,7 @@ export const storeNode2FlowNode = ({
 
           selectedTypeIndex: storeInput.selectedTypeIndex ?? templateInput.selectedTypeIndex,
           value: storeInput.value ?? templateInput.value,
+          valueType: storeInput.valueType ?? templateInput.valueType,
           label: storeInput.label ?? templateInput.label
         };
       })
@@ -148,7 +149,8 @@ export const storeNode2FlowNode = ({
 
           id: storeOutput.id ?? templateOutput.id,
           label: storeOutput.label ?? templateOutput.label,
-          value: storeOutput.value ?? templateOutput.value
+          value: storeOutput.value ?? templateOutput.value,
+          valueType: storeOutput.valueType ?? templateOutput.valueType
         };
       })
       .concat(
@@ -326,7 +328,7 @@ export const filterWorkflowNodeOutputsByType = (
       valueType === WorkflowIOValueTypeEnum.arrayAny ||
       !output.valueType ||
       output.valueType === WorkflowIOValueTypeEnum.any ||
-      validTypeMap[valueType].includes(output.valueType)
+      validTypeMap[valueType]?.includes(output.valueType)
   );
 };
 
@@ -619,7 +621,6 @@ export const compareSnapshot = (
     return nodes
       .filter((node) => {
         if (!node) return;
-        if (FlowNodeTypeEnum.systemConfig === node.type) return;
 
         return true;
       })
@@ -634,7 +635,8 @@ export const compareSnapshot = (
             key: input.key,
             selectedTypeIndex: input.selectedTypeIndex ?? 0,
             renderTypeLis: input.renderTypeList,
-            valueType: input.valueType,
+            // set to arrayAny for loopInputArray to skip valueType comparison
+            // valueType: input.key === NodeInputKeyEnum.loopInputArray ? 'arrayAny' : input.valueType,
             value: input.value ?? undefined
           })),
           outputs: node.data.outputs.map((item: FlowNodeOutputItemType) => ({
@@ -660,14 +662,4 @@ export const compareSnapshot = (
   });
 
   return isEqual(node1, node2);
-};
-
-// remove node size
-export const simplifyWorkflowNodes = (nodes: Node[]) => {
-  return nodes.map((node) => ({
-    id: node.id,
-    type: node.type,
-    position: node.position,
-    data: node.data
-  }));
 };

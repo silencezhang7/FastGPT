@@ -16,6 +16,7 @@ import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { CommonErrEnum } from '@fastgpt/global/common/error/code/common';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
 import { MongoUser } from '@fastgpt/service/support/user/schema';
+import { pushTrack } from '@fastgpt/service/common/middle/tracks/utils';
 
 export type CreateAppBody = {
   parentId?: ParentIdType;
@@ -35,12 +36,12 @@ async function handler(req: ApiRequestProps<CreateAppBody>) {
   }
 
   // 凭证校验
-  const { teamId, tmbId } = await authUserPer({ req, authToken: true, per: WritePermissionVal });
-  if (parentId) {
-    // if it is not a root app
-    // check the parent folder permission
-    await authApp({ req, appId: parentId, per: WritePermissionVal, authToken: true });
-  }
+  const [{ teamId, tmbId, userId }] = await Promise.all([
+    authUserPer({ req, authToken: true, per: WritePermissionVal }),
+    ...(parentId
+      ? [authApp({ req, appId: parentId, per: WritePermissionVal, authToken: true })]
+      : [])
+  ]);
 
   // 上限校验
   await checkTeamAppLimit(teamId);
@@ -60,6 +61,13 @@ async function handler(req: ApiRequestProps<CreateAppBody>) {
     tmbId,
     userAvatar: user?.avatar,
     username: user?.username
+  });
+
+  pushTrack.createApp({
+    type,
+    uid: userId,
+    teamId,
+    tmbId
   });
 
   return appId;
@@ -130,7 +138,8 @@ export const onCreateApp = async ({
             chatConfig,
             versionName: name,
             username,
-            avatar: userAvatar
+            avatar: userAvatar,
+            isPublish: true
           }
         ],
         { session }

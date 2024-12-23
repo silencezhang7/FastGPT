@@ -90,6 +90,14 @@ const DatasetSchema = new Schema({
   apiServer: {
     type: Object
   },
+  feishuServer: {
+    type: Object
+  },
+  yuqueServer: {
+    type: Object
+  },
+
+  autoSync: Boolean,
 
   // abandoned
   externalReadUrl: {

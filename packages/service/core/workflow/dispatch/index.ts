@@ -633,7 +633,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
     const entryNodes = runtimeNodes.filter((item) => item.isEntry);
     // reset entry
     runtimeNodes.forEach((item) => {
-      // Interactive node is not the entry node, return interactive result
+      // Interactively nodes will use the "isEntry", which does not need to be updated
       if (
         item.flowNodeType !== FlowNodeTypeEnum.userSelect &&
         item.flowNodeType !== FlowNodeTypeEnum.formInput &&
@@ -685,7 +685,7 @@ export async function dispatchWorkFlow(data: Props): Promise<DispatchFlowRespons
 }
 
 /* get system variable */
-export function getSystemVariable({
+const getSystemVariable = ({
   user,
   runningAppInfo,
   chatId,
@@ -693,7 +693,7 @@ export function getSystemVariable({
   histories = [],
   uid,
   chatConfig
-}: Props): SystemVariablesType {
+}: Props): SystemVariablesType => {
   const variables = chatConfig?.variables || [];
   const variablesMap = variables.reduce<Record<string, any>>((acc, item) => {
     acc[item.key] = valueTypeFormat(item.defaultValue, item.valueType);
@@ -709,10 +709,10 @@ export function getSystemVariable({
     histories,
     cTime: getSystemTime(user.timezone)
   };
-}
+};
 
 /* Merge consecutive text messages into one */
-export const mergeAssistantResponseAnswerText = (response: AIChatItemValueItemType[]) => {
+const mergeAssistantResponseAnswerText = (response: AIChatItemValueItemType[]) => {
   const result: AIChatItemValueItemType[] = [];
   // 合并连续的text
   for (let i = 0; i < response.length; i++) {

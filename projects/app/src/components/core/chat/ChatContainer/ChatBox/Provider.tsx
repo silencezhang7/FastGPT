@@ -6,6 +6,7 @@ import {
   AppChatDecorateConfigType,
   AppAutoExecuteConfigType,
   AppFileSelectConfigType,
+  AppQGConfigType,
   AppTTSConfigType,
   AppWhisperConfigType,
   ChatInputGuideConfigType,
@@ -15,8 +16,8 @@ import { ChatHistoryItemResType } from '@fastgpt/global/core/chat/type';
 import {
   defaultAppChatDecorateConfigType,
   defaultAppSelectFileConfig,
-  defaultAutoExecuteConfig,
   defaultChatInputGuideConfig,
+  defaultQGConfig,
   defaultTTSConfig,
   defaultWhisperConfig
 } from '@fastgpt/global/core/app/constants';
@@ -40,7 +41,7 @@ type useChatStoreType = ChatProviderProps & {
   welcomeText: string;
   variableList: VariableItemType[];
   allVariableList: VariableItemType[];
-  questionGuide: boolean;
+  questionGuide: AppQGConfigType;
   ttsConfig: AppTTSConfigType;
   whisperConfig: AppWhisperConfigType;
   autoTTSResponse: boolean;
@@ -75,7 +76,11 @@ type useChatStoreType = ChatProviderProps & {
 export const ChatBoxContext = createContext<useChatStoreType>({
   welcomeText: '',
   variableList: [],
-  questionGuide: false,
+  questionGuide: {
+    open: false,
+    model: undefined,
+    customPrompt: undefined
+  },
   ttsConfig: {
     type: 'none',
     model: undefined,
@@ -147,10 +152,16 @@ const Provider = ({
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.variables ?? []
   );
-  const questionGuide = useContextSelector(
-    ChatItemContext,
-    (v) => v.chatBoxData?.app?.chatConfig?.questionGuide ?? false
-  );
+  const questionGuide = useContextSelector(ChatItemContext, (v) => {
+    const val = v.chatBoxData?.app?.chatConfig?.questionGuide;
+    if (typeof val === 'boolean') {
+      return {
+        ...defaultQGConfig,
+        open: val
+      };
+    }
+    return v.chatBoxData?.app?.chatConfig?.questionGuide ?? defaultQGConfig;
+  });
   const ttsConfig = useContextSelector(
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.ttsConfig ?? defaultTTSConfig
@@ -166,11 +177,6 @@ const Provider = ({
   const fileSelectConfig = useContextSelector(
     ChatItemContext,
     (v) => v.chatBoxData?.app?.chatConfig?.fileSelectConfig ?? defaultAppSelectFileConfig
-  );
-
-  const chatDecorateConfig = useContextSelector(
-    ChatItemContext,
-    (v) => v.chatBoxData?.app?.chatConfig?.chatDecorateConfig ?? defaultAppChatDecorateConfigType
   );
 
   const chatRecords = useContextSelector(ChatRecordContext, (v) => v.chatRecords);
@@ -250,8 +256,7 @@ const Provider = ({
     getHistoryResponseData,
     chatType,
     showRawSource,
-    showNodeStatus,
-    chatDecorateConfig
+    showNodeStatus
   };
 
   return <ChatBoxContext.Provider value={value}>{children}</ChatBoxContext.Provider>;

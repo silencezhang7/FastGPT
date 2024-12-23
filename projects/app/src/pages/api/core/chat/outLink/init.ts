@@ -35,6 +35,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const { nodes, chatConfig } = await getAppLatestVersion(app._id, app);
+  const pluginInputs =
+    chat?.pluginInputs ??
+    nodes?.find((node) => node.flowNodeType === FlowNodeTypeEnum.pluginInput)?.inputs ??
+    [];
 
   jsonRes<InitChatResponse>(res, {
     data: {
@@ -43,7 +47,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       title: chat?.title,
       //@ts-ignore
       userAvatar: tmb?.userId?.avatar,
-      variables: chat?.variables || {},
+      variables: chat?.variables,
       app: {
         chatConfig: getAppChatConfig({
           chatConfig,
@@ -56,9 +60,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         avatar: app.avatar,
         intro: app.intro,
         type: app.type,
-        pluginInputs:
-          app?.modules?.find((node) => node.flowNodeType === FlowNodeTypeEnum.pluginInput)
-            ?.inputs ?? []
+        pluginInputs
       }
     }
   });

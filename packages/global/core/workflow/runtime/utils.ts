@@ -1,5 +1,5 @@
 import { ChatCompletionRequestMessageRoleEnum } from '../../ai/constants';
-import { NodeInputKeyEnum, NodeOutputKeyEnum } from '../constants';
+import { NodeInputKeyEnum, NodeOutputKeyEnum, WorkflowIOValueTypeEnum } from '../constants';
 import { FlowNodeTypeEnum } from '../node/constant';
 import { StoreNodeItemType } from '../type/node';
 import { StoreEdgeItemType } from '../type/edge';
@@ -251,6 +251,7 @@ export const getReferenceVariableValue = ({
       return variables[outputId];
     }
 
+    // 避免 value 刚好就是二个元素的字符串数组
     const node = nodes.find((node) => node.nodeId === sourceNodeId);
     if (!node) {
       return value;
@@ -279,6 +280,31 @@ export const getReferenceVariableValue = ({
   return value;
 };
 
+export const formatVariableValByType = (val: any, valueType?: WorkflowIOValueTypeEnum) => {
+  if (!valueType) return val;
+  // Value type check, If valueType invalid, return undefined
+  if (valueType.startsWith('array') && !Array.isArray(val)) return undefined;
+  if (valueType === WorkflowIOValueTypeEnum.boolean) return Boolean(val);
+  if (valueType === WorkflowIOValueTypeEnum.number) return Number(val);
+  if (valueType === WorkflowIOValueTypeEnum.string) {
+    if (val === undefined) return 'undefined';
+    if (val === null) return 'null';
+    return typeof val === 'object' ? JSON.stringify(val) : String(val);
+  }
+  if (
+    [
+      WorkflowIOValueTypeEnum.object,
+      WorkflowIOValueTypeEnum.chatHistory,
+      WorkflowIOValueTypeEnum.datasetQuote,
+      WorkflowIOValueTypeEnum.selectApp,
+      WorkflowIOValueTypeEnum.selectDataset
+    ].includes(valueType) &&
+    typeof val !== 'object'
+  )
+    return undefined;
+
+  return val;
+};
 // replace {{$xx.xx$}} variables for text
 export function replaceEditorVariable({
   text,
@@ -308,7 +334,7 @@ export function replaceEditorVariable({
       if (!node) return;
 
       const output = node.outputs.find((output) => output.id === id);
-      if (output) return output.value;
+      if (output) return formatVariableValByType(output.value, output.valueType);
 
       const input = node.inputs.find((input) => input.key === id);
       if (input) return getReferenceVariableValue({ value: input.value, nodes, variables });
@@ -321,7 +347,7 @@ export function replaceEditorVariable({
     })();
 
     const regex = new RegExp(`\\{\\{\\$(${nodeId}\\.${id})\\$\\}\\}`, 'g');
-    text = text.replace(regex, formatVal);
+    text = text.replace(regex, () => formatVal);
   });
 
   return text || '';

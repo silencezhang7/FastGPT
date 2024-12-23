@@ -10,7 +10,7 @@ import {
 } from './constants';
 import { DatasetPermission } from '../../support/permission/dataset/controller';
 import { Permission } from '../../support/permission/controller';
-import { APIFileServer } from './apiDataset';
+import { APIFileServer, FeishuServer, YuqueServer } from './apiDataset';
 
 export type DatasetSchemaType = {
   _id: string;
@@ -33,6 +33,10 @@ export type DatasetSchemaType = {
   };
   inheritPermission: boolean;
   apiServer?: APIFileServer;
+  feishuServer?: FeishuServer;
+  yuqueServer?: YuqueServer;
+
+  autoSync?: boolean;
 
   // abandon
   externalReadUrl?: string;
@@ -62,11 +66,13 @@ export type DatasetCollectionSchemaType = {
   fileId?: string; // local file id
   rawLink?: string; // link url
   externalFileId?: string; //external file id
+  apiFileId?: string; // api file id
+  externalFileUrl?: string; // external import url
+
+  nextSyncTime?: Date;
 
   rawTextLength?: number;
   hashRawText?: string;
-  externalFileUrl?: string; // external import url
-  apiFileId?: string; // api file id
   metadata?: {
     webPageSelector?: string;
     relatedImgId?: string; // The id of the associated image collections

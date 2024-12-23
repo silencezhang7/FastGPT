@@ -58,11 +58,13 @@ export type FastGPTFeConfigsType = {
     icon?: string;
     title?: string;
     url?: string;
+    autoLogin?: boolean;
   };
   oauth?: {
     github?: string;
     google?: string;
     wechat?: string;
+    dingtalk?: string;
     microsoft?: {
       clientId?: string;
       tenantId?: string;

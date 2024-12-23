@@ -11,7 +11,7 @@ export const AppCollectionName = 'apps';
 export const chatConfigType = {
   welcomeText: String,
   variables: Array,
-  questionGuide: Boolean,
+  questionGuide: Object,
   ttsConfig: Object,
   whisperConfig: Object,
   scheduledTriggerConfig: Object,
@@ -122,6 +122,13 @@ const AppSchema = new Schema({
 
 AppSchema.index({ teamId: 1, updateTime: -1 });
 AppSchema.index({ teamId: 1, type: 1 });
-AppSchema.index({ scheduledTriggerConfig: 1, intervalNextTime: -1 });
+AppSchema.index(
+  { scheduledTriggerConfig: 1, scheduledTriggerNextTime: -1 },
+  {
+    partialFilterExpression: {
+      scheduledTriggerConfig: { $exists: true }
+    }
+  }
+);
 
 export const MongoApp = getMongoModel<AppType>(AppCollectionName, AppSchema);

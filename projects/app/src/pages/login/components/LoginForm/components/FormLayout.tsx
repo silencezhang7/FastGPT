@@ -6,7 +6,7 @@ import { OAuthEnum } from '@fastgpt/global/support/user/constant';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { customAlphabet } from 'nanoid';
 import { useRouter } from 'next/router';
-import { Dispatch, useRef } from 'react';
+import { Dispatch, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'next-i18next';
 import I18nLngSelector from '@/components/Select/I18nLngSelector';
 import { useSystem } from '@fastgpt/web/hooks/useSystem';
@@ -23,7 +23,6 @@ interface Props {
 const FormLayout = ({ children, setPageType, pageType }: Props) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const { toast } = useToast();
 
   const { setLoginStore, feConfigs } = useSystemStore();
   const { lastRoute = '/app/list' } = router.query as { lastRoute: string };
@@ -39,6 +38,16 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
             provider: OAuthEnum.wechat,
             icon: 'common/wechatFill',
             pageType: LoginPageTypeEnum.wechat
+          }
+        ]
+      : []),
+    ...(feConfigs?.oauth?.dingtalk
+      ? [
+          {
+            label: t('user:login.Dingtalk'),
+            provider: OAuthEnum.dingtalk,
+            icon: 'common/dingtalkFill',
+            redirectUrl: `https://login.dingtalk.com/oauth2/auth?client_id=${feConfigs?.oauth?.dingtalk}&redirect_uri=${redirectUri}&state=${state.current}&response_type=code&scope=openid&prompt=consent`
           }
         ]
       : []),
@@ -85,8 +94,28 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
       : [])
   ];
 
-  const show_oauth =
-    !sessionStorage.getItem('bd_vid') && !!(feConfigs?.sso?.url || oAuthList.length > 0);
+  const show_oauth = useMemo(
+    () => !sessionStorage.getItem('bd_vid') && !!(feConfigs?.sso?.url || oAuthList.length > 0),
+    [feConfigs?.sso?.url, oAuthList.length]
+  );
+
+  const onClickSso = useCallback(() => {
+    if (!feConfigs?.sso?.url) return;
+    setLoginStore({
+      provider: OAuthEnum.sso,
+      lastRoute,
+      state: state.current
+    });
+    const url = `${feConfigs.sso.url}/login/oauth/authorize?redirect_uri=${encodeURIComponent(redirectUri)}&state=${state.current}`;
+
+    window.open(url, '_self');
+  }, [feConfigs?.sso?.url, lastRoute, redirectUri, setLoginStore]);
+
+  useEffect(() => {
+    if (feConfigs?.sso?.autoLogin) {
+      onClickSso();
+    }
+  }, [feConfigs?.sso?.autoLogin]);
 
   return (
     <Flex flexDirection={'column'} h={'100%'}>
@@ -154,24 +183,7 @@ const FormLayout = ({ children, setPageType, pageType }: Props) => {
                   h={'40px'}
                   borderRadius={'sm'}
                   leftIcon={<MyImage alt="" src={feConfigs.sso.icon as any} w="20px" />}
-                  onClick={() => {
-                    const url = feConfigs.sso?.url;
-                    if (!url) {
-                      toast({
-                        title: 'SSO URL is not set',
-                        status: 'error'
-                      });
-                      return;
-                    }
-                    setLoginStore({
-                      provider: OAuthEnum.sso,
-                      lastRoute,
-                      state: state.current
-                    });
-
-                    const formatUrl = `${url}/login/oauth/authorize?redirect_uri=${encodeURIComponent(redirectUri)}&state=${state.current}`;
-                    router.replace(formatUrl, '_self');
-                  }}
+                  onClick={onClickSso}
                 >
                   {feConfigs.sso.title}
                 </Button>

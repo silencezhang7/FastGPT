@@ -1,9 +1,11 @@
+import { PROMPT_QUESTION_GUIDE } from '../ai/prompt/agent';
 import {
   AppTTSConfigType,
   AppFileSelectConfigType,
   AppWhisperConfigType,
   AppChatDecorateConfigType,
-  AppAutoExecuteConfigType
+  AppAutoExecuteConfigType,
+  AppQGConfigType
 } from './type';
 
 export enum AppTypeEnum {
@@ -27,6 +29,12 @@ export const defaultWhisperConfig: AppWhisperConfigType = {
   open: false,
   autoSend: false,
   autoTTSResponse: false
+};
+
+export const defaultQGConfig: AppQGConfigType = {
+  open: false,
+  model: 'gpt-4o-mini',
+  customPrompt: PROMPT_QUESTION_GUIDE
 };
 
 export const defaultChatInputGuideConfig = {

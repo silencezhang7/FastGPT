@@ -49,11 +49,7 @@ const UserSchema = new Schema({
     type: String,
     default: defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)]
   },
-  inviterId: {
-    // 谁邀请注册的
-    type: Schema.Types.ObjectId,
-    ref: userCollectionName
-  },
+
   promotionRate: {
     type: Number,
     default: 15
@@ -71,15 +67,22 @@ const UserSchema = new Schema({
   lastLoginTmbId: {
     type: Schema.Types.ObjectId
   },
-  fastgpt_sem: {
-    type: Object
-  }
+
+  inviterId: {
+    // 谁邀请注册的
+    type: Schema.Types.ObjectId,
+    ref: userCollectionName
+  },
+  fastgpt_sem: Object,
+  sourceDomain: String
 });
 
 try {
   // login
-  UserSchema.index({ username: 1, password: 1 });
-  UserSchema.index({ createTime: -1 });
+  UserSchema.index({ username: 1, password: 1 }, { background: true });
+
+  // Admin charts
+  UserSchema.index({ createTime: -1 }, { background: true });
 } catch (error) {
   console.log(error);
 }

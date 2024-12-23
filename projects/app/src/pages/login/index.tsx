@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -18,7 +18,7 @@ import { useUserStore } from '@/web/support/user/useUserStore';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
 import LoginForm from './components/LoginForm/LoginForm';
 import dynamic from 'next/dynamic';
-import { serviceSideProps } from '@/web/common/utils/i18n';
+import { serviceSideProps } from '@fastgpt/web/common/system/nextjs';
 import { clearToken, setToken } from '@/web/support/user/auth';
 import Script from 'next/script';
 import Loading from '@fastgpt/web/components/common/MyLoading';
@@ -73,7 +73,7 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
     [lastRoute, router, setUserInfo]
   );
 
-  function DynamicComponent({ type }: { type: `${LoginPageTypeEnum}` }) {
+  const DynamicComponent = useMemo(() => {
     const TypeMap = {
       [LoginPageTypeEnum.passwordLogin]: LoginForm,
       [LoginPageTypeEnum.register]: RegisterForm,
@@ -81,10 +81,11 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
       [LoginPageTypeEnum.wechat]: WechatForm
     };
 
-    const Component = TypeMap[type];
+    // @ts-ignore
+    const Component = TypeMap[pageType];
 
     return <Component setPageType={setPageType} loginSuccess={loginSuccess} />;
-  }
+  }, [pageType, loginSuccess]);
 
   /* default login type */
   useEffect(() => {
@@ -99,7 +100,7 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
 
     // init store
     setLastChatAppId('');
-  }, [feConfigs.oauth]);
+  }, [feConfigs?.oauth, setLastChatAppId]);
 
   const {
     isOpen: isOpenRedirect,
@@ -171,7 +172,7 @@ const Login = ({ ChineseRedirectUrl }: { ChineseRedirectUrl: string }) => {
         >
           <Box w={['100%', '380px']} flex={'1 0 0'}>
             {pageType ? (
-              <DynamicComponent type={pageType} />
+              DynamicComponent
             ) : (
               <Center w={'full'} h={'full'} position={'relative'}>
                 <Loading fixed={false} />

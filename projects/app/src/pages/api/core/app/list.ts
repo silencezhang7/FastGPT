@@ -25,6 +25,16 @@ export type ListAppBody = {
   searchKey?: string;
 };
 
+/* 
+  获取 APP 列表权限
+  1. 校验 folder 权限和获取 team 权限（owner 单独处理）
+  2. 获取 team 下所有 app 权限。获取我的所有组。并计算出我所有的app权限。
+  3. 过滤我有的权限的 app，以及当前 parentId 的 app（由于权限继承问题，这里没法一次性根据 id 去获取）
+  4. 根据过滤条件获取 app 列表
+  5. 遍历搜索出来的 app，并赋予权限（继承的 app，使用 parent 的权限）
+  6. 再根据 read 权限进行一次过滤。
+*/
+
 async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemType[]> {
   const { parentId, type, getRecentlyChat, searchKey } = req.body;
 
@@ -75,6 +85,24 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
   );
 
   const findAppsQuery = (() => {
+    if (getRecentlyChat) {
+      return {
+        // get all chat app
+        teamId,
+        type: { $in: [AppTypeEnum.workflow, AppTypeEnum.simple, AppTypeEnum.plugin] }
+      };
+    }
+
+    // Filter apps by permission, if not owner, only get apps that I have permission to access
+    const idList = { _id: { $in: myPerList.map((item) => item.resourceId) } };
+    const appPerQuery = teamPer.isOwner
+      ? {}
+      : parentId
+        ? {
+            $or: [idList, parseParentIdInMongo(parentId)]
+          }
+        : { $or: [idList, { parentId: null }] };
+
     const searchMatch = searchKey
       ? {
           $or: [
@@ -83,31 +111,17 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
           ]
         }
       : {};
-    // Filter apps by permission, if not owner, only get apps that I have permission to access
-    const appIdQuery = teamPer.isOwner
-      ? {}
-      : { _id: { $in: myPerList.map((item) => item.resourceId) } };
-
-    if (getRecentlyChat) {
-      return {
-        // get all chat app
-        ...appIdQuery,
-        teamId,
-        type: { $in: [AppTypeEnum.workflow, AppTypeEnum.simple, AppTypeEnum.plugin] },
-        ...searchMatch
-      };
-    }
 
     if (searchKey) {
       return {
-        ...appIdQuery,
+        ...appPerQuery,
         teamId,
         ...searchMatch
       };
     }
 
     return {
-      ...appIdQuery,
+      ...appPerQuery,
       teamId,
       ...(type && (Array.isArray(type) ? { type: { $in: type } } : { type })),
       ...parseParentIdInMongo(parentId)
@@ -143,24 +157,30 @@ async function handler(req: ApiRequestProps<ListAppBody>): Promise<AppListItemTy
               .map((item) => item.permission)
           );
 
-          // Count app collaborators
-          const clbCount = perList.filter((item) => String(item.resourceId) === appId).length;
-
-          return {
-            Per: new AppPermission({
-              per: tmbPer ?? groupPer ?? AppDefaultPermissionVal,
-              isOwner: String(app.tmbId) === String(tmbId) || teamPer.isOwner
-            }),
-            privateApp: AppFolderTypeList.includes(app.type) ? clbCount <= 1 : clbCount === 0
-          };
+          return new AppPermission({
+            per: tmbPer ?? groupPer ?? AppDefaultPermissionVal,
+            isOwner: String(app.tmbId) === String(tmbId) || teamPer.isOwner
+          });
         };
 
-        // Inherit app
-        if (app.inheritPermission && parentId && !AppFolderTypeList.includes(app.type)) {
-          return getPer(String(parentId));
-        } else {
-          return getPer(String(app._id));
+        const getClbCount = (appId: string) => {
+          return perList.filter((item) => String(item.resourceId) === String(appId)).length;
+        };
+
+        // Inherit app, check parent folder clb
+        if (!AppFolderTypeList.includes(app.type) && app.parentId && app.inheritPermission) {
+          return {
+            Per: getPer(String(app.parentId)),
+            privateApp: getClbCount(String(app.parentId)) <= 1
+          };
         }
+
+        return {
+          Per: getPer(String(app._id)),
+          privateApp: AppFolderTypeList.includes(app.type)
+            ? getClbCount(String(app._id)) <= 1
+            : getClbCount(String(app._id)) === 0
+        };
       })();
 
       return {

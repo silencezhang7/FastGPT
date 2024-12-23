@@ -7,7 +7,7 @@ import { clearToken, setToken } from '@/web/support/user/auth';
 import { oauthLogin } from '@/web/support/user/api';
 import { useToast } from '@fastgpt/web/hooks/useToast';
 import Loading from '@fastgpt/web/components/common/MyLoading';
-import { serviceSideProps } from '@/web/common/utils/i18n';
+import { serviceSideProps } from '@fastgpt/web/common/system/nextjs';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { useTranslation } from 'next-i18next';
 import { OAuthEnum } from '@fastgpt/global/support/user/constant';
@@ -43,7 +43,18 @@ const provider = () => {
           type: loginStore?.provider as `${OAuthEnum}`,
           code,
           callbackUrl: `${location.origin}/login/provider`,
-          inviterId: localStorage.getItem('inviterId') || undefined
+          inviterId: localStorage.getItem('inviterId') || undefined,
+          bd_vid: sessionStorage.getItem('bd_vid') || undefined,
+          fastgpt_sem: (() => {
+            try {
+              return sessionStorage.getItem('fastgpt_sem')
+                ? JSON.parse(sessionStorage.getItem('fastgpt_sem')!)
+                : undefined;
+            } catch {
+              return undefined;
+            }
+          })(),
+          sourceDomain: sessionStorage.getItem('sourceDomain') || undefined
         });
 
         if (!res) {
@@ -79,7 +90,8 @@ const provider = () => {
       return;
     }
 
-    if (!code || !loginStore?.state || !state) return;
+    console.log('SSO', { loginStore, code, state });
+    if (!code || !loginStore) return;
 
     if (isOauthLogging) return;
 

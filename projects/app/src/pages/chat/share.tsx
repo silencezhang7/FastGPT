@@ -11,7 +11,7 @@ import type { StartChatFnProps } from '@/components/core/chat/ChatContainer/type
 import PageContainer from '@/components/PageContainer';
 import ChatHeader from './components/ChatHeader';
 import ChatHistorySlider from './components/ChatHistorySlider';
-import { serviceSideProps } from '@/web/common/utils/i18n';
+import { serviceSideProps } from '@fastgpt/web/common/system/nextjs';
 import { useTranslation } from 'next-i18next';
 import { getInitOutLinkChatInfo } from '@/web/core/chat/api';
 import { getChatTitleFromChatMessage } from '@fastgpt/global/core/chat/utils';
@@ -22,8 +22,7 @@ import { connectToDatabase } from '@/service/mongo';
 import NextHead from '@/components/common/NextHead';
 import { useContextSelector } from 'use-context-selector';
 import ChatContextProvider, { ChatContext } from '@/web/core/chat/context/chatContext';
-import { InitChatResponse } from '@/global/core/chat/api';
-import { defaultChatData, GetChatTypeEnum } from '@/global/core/chat/constants';
+import { GetChatTypeEnum } from '@/global/core/chat/constants';
 import { useMount } from 'ahooks';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
@@ -37,6 +36,8 @@ import ChatRecordContextProvider, {
 } from '@/web/core/chat/context/chatRecordContext';
 import { useChatStore } from '@/web/core/chat/context/useChatStore';
 import { ChatSourceEnum } from '@fastgpt/global/core/chat/constants';
+import { useI18nLng } from '@fastgpt/web/hooks/useI18n';
+
 const CustomPluginRunBox = dynamic(() => import('./components/CustomPluginRunBox'));
 
 type Props = {
@@ -102,7 +103,8 @@ const OutLink = (props: Props) => {
       setChatBoxData(res);
 
       resetVariables({
-        variables: res.variables
+        variables: res.variables,
+        variableList: res.app?.chatConfig?.variables
       });
 
       return res;
@@ -299,8 +301,9 @@ const OutLink = (props: Props) => {
 
 const Render = (props: Props) => {
   const { shareId, authToken, customUid, appId } = props;
-  const { localUId, loaded } = useShareChatStore();
+  const { localUId } = useShareChatStore();
   const { source, chatId, setSource, setAppId, setOutLinkAuthData } = useChatStore();
+  const { setUserDefaultLng } = useI18nLng();
 
   const chatHistoryProviderParams = useMemo(() => {
     return { shareId, outLinkUid: authToken || customUid || localUId };
@@ -317,6 +320,7 @@ const Render = (props: Props) => {
 
   useMount(() => {
     setSource('share');
+    setUserDefaultLng(true);
   });
 
   // Set outLinkAuthData

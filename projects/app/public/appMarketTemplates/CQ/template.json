@@ -18,56 +18,7 @@
           "y": -486.7611729549753
         },
         "version": "481",
-        "inputs": [
-          {
-            "key": "welcomeText",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
-            "label": "core.app.Welcome Text",
-            "value": "你好，我是知识库助手，请不要忘记选择知识库噢~\n[你是谁]\n[如何使用]"
-          },
-          {
-            "key": "variables",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "valueType": "WorkflowIOValueTypeEnum.any",
-            "label": "core.app.Chat Variable",
-            "value": []
-          },
-          {
-            "key": "questionGuide",
-            "valueType": "WorkflowIOValueTypeEnum.boolean",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "label": "core.app.Question Guide",
-            "value": true
-          },
-          {
-            "key": "tts",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "valueType": "WorkflowIOValueTypeEnum.any",
-            "label": "",
-            "value": {
-              "type": "web"
-            }
-          },
-          {
-            "key": "whisper",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "valueType": "WorkflowIOValueTypeEnum.any",
-            "label": "",
-            "value": {
-              "open": false,
-              "autoSend": false,
-              "autoTTSResponse": false
-            }
-          },
-          {
-            "key": "scheduleTrigger",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
-            "valueType": "WorkflowIOValueTypeEnum.any",
-            "label": "",
-            "value": null
-          }
-        ],
+        "inputs": [],
         "outputs": []
       },
       {
@@ -84,8 +35,8 @@
         "inputs": [
           {
             "key": "userChatInput",
-            "renderTypeList": ["FlowNodeInputTypeEnum.reference", "FlowNodeInputTypeEnum.textarea"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "renderTypeList": ["reference", "textarea"],
+            "valueType": "string",
             "label": "用户问题",
             "required": true,
             "toolDescription": "用户问题"
@@ -96,7 +47,7 @@
             "id": "userChatInput",
             "key": "userChatInput",
             "label": "core.module.input.label.user question",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "type": "FlowNodeOutputTypeEnum.static"
           }
         ]
@@ -116,58 +67,55 @@
         "inputs": [
           {
             "key": "model",
-            "renderTypeList": [
-              "FlowNodeInputTypeEnum.settingLLMModel",
-              "FlowNodeInputTypeEnum.reference"
-            ],
+            "renderTypeList": ["settingLLMModel", "reference"],
             "label": "core.module.input.label.aiModel",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "value": "gpt-4o-mini"
           },
           {
             "key": "temperature",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
             "value": 3,
-            "valueType": "WorkflowIOValueTypeEnum.number",
+            "valueType": "number",
             "min": 0,
             "max": 10,
             "step": 1
           },
           {
             "key": "maxToken",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
             "value": 1950,
-            "valueType": "WorkflowIOValueTypeEnum.number",
+            "valueType": "number",
             "min": 100,
             "max": 4000,
             "step": 50
           },
           {
             "key": "isResponseAnswerText",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
             "value": true,
-            "valueType": "WorkflowIOValueTypeEnum.boolean"
+            "valueType": "boolean"
           },
           {
             "key": "quoteTemplate",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.string"
+            "valueType": "string"
           },
           {
             "key": "quotePrompt",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.string"
+            "valueType": "string"
           },
           {
             "key": "systemPrompt",
-            "renderTypeList": ["FlowNodeInputTypeEnum.textarea", "FlowNodeInputTypeEnum.reference"],
+            "renderTypeList": ["textarea", "reference"],
             "max": 3000,
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "label": "core.ai.Prompt",
             "description": "core.app.tip.systemPromptTip",
             "placeholder": "core.app.tip.chatNodeSystemPromptTip",
@@ -175,11 +123,8 @@
           },
           {
             "key": "history",
-            "renderTypeList": [
-              "FlowNodeInputTypeEnum.numberInput",
-              "FlowNodeInputTypeEnum.reference"
-            ],
-            "valueType": "WorkflowIOValueTypeEnum.chatHistory",
+            "renderTypeList": ["numberInput", "reference"],
+            "valueType": "chatHistory",
             "label": "core.module.input.label.chat history",
             "required": true,
             "min": 0,
@@ -188,8 +133,8 @@
           },
           {
             "key": "userChatInput",
-            "renderTypeList": ["FlowNodeInputTypeEnum.reference", "FlowNodeInputTypeEnum.textarea"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "renderTypeList": ["reference", "textarea"],
+            "valueType": "string",
             "label": "用户问题",
             "required": true,
             "toolDescription": "用户问题",
@@ -197,11 +142,11 @@
           },
           {
             "key": "quoteQA",
-            "renderTypeList": ["FlowNodeInputTypeEnum.settingDatasetQuotePrompt"],
+            "renderTypeList": ["settingDatasetQuotePrompt"],
             "label": "",
             "debugLabel": "知识库引用",
             "description": "",
-            "valueType": "WorkflowIOValueTypeEnum.datasetQuote",
+            "valueType": "datasetQuote",
             "value": ["MNMMMIjjWyMU", "quoteQA"]
           }
         ],
@@ -211,7 +156,7 @@
             "key": "history",
             "label": "core.module.output.label.New context",
             "description": "core.module.output.description.New context",
-            "valueType": "WorkflowIOValueTypeEnum.chatHistory",
+            "valueType": "chatHistory",
             "type": "FlowNodeOutputTypeEnum.static"
           },
           {
@@ -219,7 +164,7 @@
             "key": "answerText",
             "label": "core.module.output.label.Ai response content",
             "description": "core.module.output.description.Ai response content",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "type": "FlowNodeOutputTypeEnum.static"
           }
         ]
@@ -239,21 +184,18 @@
         "inputs": [
           {
             "key": "model",
-            "renderTypeList": [
-              "FlowNodeInputTypeEnum.selectLLMModel",
-              "FlowNodeInputTypeEnum.reference"
-            ],
+            "renderTypeList": ["selectLLMModel", "reference"],
             "label": "core.module.input.label.aiModel",
             "required": true,
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "llmModelType": "classify",
             "value": "gpt-4o-mini"
           },
           {
             "key": "systemPrompt",
-            "renderTypeList": ["FlowNodeInputTypeEnum.textarea", "FlowNodeInputTypeEnum.reference"],
+            "renderTypeList": ["textarea", "reference"],
             "max": 3000,
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "label": "core.module.input.label.Background",
             "description": "core.module.input.description.Background",
             "placeholder": "core.module.input.placeholder.Classify background",
@@ -261,11 +203,8 @@
           },
           {
             "key": "history",
-            "renderTypeList": [
-              "FlowNodeInputTypeEnum.numberInput",
-              "FlowNodeInputTypeEnum.reference"
-            ],
-            "valueType": "WorkflowIOValueTypeEnum.chatHistory",
+            "renderTypeList": ["numberInput", "reference"],
+            "valueType": "chatHistory",
             "label": "core.module.input.label.chat history",
             "required": true,
             "min": 0,
@@ -274,16 +213,16 @@
           },
           {
             "key": "userChatInput",
-            "renderTypeList": ["FlowNodeInputTypeEnum.reference", "FlowNodeInputTypeEnum.textarea"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "renderTypeList": ["reference", "textarea"],
+            "valueType": "string",
             "label": "用户问题",
             "required": true,
             "value": ["workflowStartNodeId", "userChatInput"]
           },
           {
             "key": "agents",
-            "renderTypeList": ["FlowNodeInputTypeEnum.custom"],
-            "valueType": "WorkflowIOValueTypeEnum.any",
+            "renderTypeList": ["custom"],
+            "valueType": "any",
             "label": "",
             "value": [
               {
@@ -306,7 +245,7 @@
             "id": "cqResult",
             "key": "cqResult",
             "label": "分类结果",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "type": "FlowNodeOutputTypeEnum.static"
           }
         ]
@@ -325,8 +264,8 @@
         "inputs": [
           {
             "key": "text",
-            "renderTypeList": ["FlowNodeInputTypeEnum.textarea", "FlowNodeInputTypeEnum.reference"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "renderTypeList": ["textarea", "reference"],
+            "valueType": "string",
             "label": "core.module.input.label.Response content",
             "description": "core.module.input.description.Response content",
             "placeholder": "core.module.input.description.Response content",
@@ -351,68 +290,65 @@
         "inputs": [
           {
             "key": "datasets",
-            "renderTypeList": [
-              "FlowNodeInputTypeEnum.selectDataset",
-              "FlowNodeInputTypeEnum.reference"
-            ],
+            "renderTypeList": ["selectDataset", "reference"],
             "label": "core.module.input.label.Select dataset",
             "value": [],
-            "valueType": "WorkflowIOValueTypeEnum.selectDataset",
+            "valueType": "selectDataset",
             "list": [],
             "required": true
           },
           {
             "key": "similarity",
-            "renderTypeList": ["FlowNodeInputTypeEnum.selectDatasetParamsModal"],
+            "renderTypeList": ["selectDatasetParamsModal"],
             "label": "",
             "value": 0.4,
-            "valueType": "WorkflowIOValueTypeEnum.number"
+            "valueType": "number"
           },
           {
             "key": "limit",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
             "value": 1500,
-            "valueType": "WorkflowIOValueTypeEnum.number"
+            "valueType": "number"
           },
           {
             "key": "searchMode",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "value": "embedding"
           },
           {
             "key": "usingReRank",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.boolean",
+            "valueType": "boolean",
             "value": false
           },
           {
             "key": "datasetSearchUsingExtensionQuery",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.boolean",
+            "valueType": "boolean",
             "value": true
           },
           {
             "key": "datasetSearchExtensionModel",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.string"
+            "valueType": "string"
           },
           {
             "key": "datasetSearchExtensionBg",
-            "renderTypeList": ["FlowNodeInputTypeEnum.hidden"],
+            "renderTypeList": ["hidden"],
             "label": "",
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "valueType": "string",
             "value": ""
           },
           {
             "key": "userChatInput",
-            "renderTypeList": ["reference", "FlowNodeInputTypeEnum.textarea"],
-            "valueType": "WorkflowIOValueTypeEnum.string",
+            "renderTypeList": ["reference", "textarea"],
+            "valueType": "string",
             "label": "用户问题",
             "required": true,
             "toolDescription": "需要检索的内容",
@@ -426,7 +362,7 @@
             "label": "core.module.Dataset quote.label",
             "description": "特殊数组格式，搜索结果为空时，返回空数组。",
             "type": "FlowNodeOutputTypeEnum.static",
-            "valueType": "WorkflowIOValueTypeEnum.datasetQuote"
+            "valueType": "datasetQuote"
           }
         ]
       }

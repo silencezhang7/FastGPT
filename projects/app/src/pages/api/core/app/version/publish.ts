@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
 import { NextAPI } from '@/service/middleware/entry';
 import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { MongoAppVersion } from '@fastgpt/service/core/app/version/schema';
@@ -52,12 +52,17 @@ async function handler(
         updateTime: new Date(),
         version: 'v2',
         // 只有发布才会更新定时器
-        ...(isPublish && {
-          scheduledTriggerConfig: chatConfig?.scheduledTriggerConfig,
-          scheduledTriggerNextTime: chatConfig?.scheduledTriggerConfig?.cronString
-            ? getNextTimeByCronStringAndTimezone(chatConfig.scheduledTriggerConfig)
-            : null
-        }),
+        ...(isPublish &&
+          (chatConfig?.scheduledTriggerConfig?.cronString
+            ? {
+                $set: {
+                  scheduledTriggerConfig: chatConfig.scheduledTriggerConfig,
+                  scheduledTriggerNextTime: getNextTimeByCronStringAndTimezone(
+                    chatConfig.scheduledTriggerConfig
+                  )
+                }
+              }
+            : { $unset: { scheduledTriggerConfig: '', scheduledTriggerNextTime: '' } })),
         'pluginData.nodeVersion': _id
       },
       {
