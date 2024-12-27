@@ -179,16 +179,8 @@ const ChatDecorate: React.FC<{
   onSetChatInput: Function;
   chatDecorateConfig: AppChatDecorateConfigType | undefined;
 }> = (props) => {
-  const { isPc } = useSystem();
   const { t } = useTranslation();
-  const [chatWidth, setChatWidth] = useState('18vw');
-  useEffect(() => {
-    if (isPc) {
-      setChatWidth('18vw');
-    } else {
-      setChatWidth('50vw');
-    }
-  }, [isPc]);
+  const { isPc } = useSystem();
   const [problemTexts, setProblemTexts] = useState<string[]>([]);
   useEffect(() => {
     if (props.chatDecorateConfig?.problemTexts) {
@@ -219,7 +211,7 @@ const ChatDecorate: React.FC<{
   return (
     <>
       {props.chatDecorateConfig?.open && (
-        <Box ml={4}>
+        <Box>
           <Box ml={4}>
             <Stack gap={8}>
               <HStack gap="4">
@@ -233,17 +225,11 @@ const ChatDecorate: React.FC<{
               </HStack>
             </Stack>
           </Box>
-          <Box mt={4} ml={4}>
-            <Flex gap={6}>
+          <Box mt={4} width={isPc ? '20vw' : 'auto'}>
+            <Flex justifyContent={'space-evenly'}>
               <PortraitCard onSetChatInput={props.onSetChatInput} />
-              <Card
-                size={'lg'}
-                width={chatWidth}
-                style={{
-                  position: 'relative'
-                }}
-              >
-                <Box ml={4}>
+              <Card size={'lg'}>
+                <Box ml={4} mr={2}>
                   <Text mt={2}>{t('app:chat_decorate_guess_what_asking')}</Text>
                   {problemTexts.map((item, index) => (
                     <Text
@@ -253,6 +239,7 @@ const ChatDecorate: React.FC<{
                       onClick={() => props.onSetChatInput(item)}
                       key={index}
                       mt={2}
+                      pr={4}
                     >
                       {item}
                     </Text>
