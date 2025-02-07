@@ -258,6 +258,7 @@ export const iconPaths = {
   'core/workflow/template/WeCom': () => import('./icons/core/workflow/template/WeCom.svg'),
   'core/workflow/template/historyToFile': () =>
     import('./icons/core/workflow/template/historyToFile.svg'),
+  'core/workflow/template/HTTP': () => import('./icons/core/workflow/template/HTTP.svg'),
   'core/workflow/template/duckduckgo': () =>
     import('./icons/core/workflow/template/duckduckgo.svg'),
   'core/workflow/template/extractJson': () =>

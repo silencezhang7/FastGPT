@@ -31,7 +31,8 @@ const packagePluginList = [
   'historyToFile',
   'WeCom',
   'Doc2X/PDF2text',
-  'searchXNG'
+  'searchXNG',
+  'HttpRequest'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];
