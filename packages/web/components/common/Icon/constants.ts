@@ -326,6 +326,11 @@ export const iconPaths = {
   'core/workflow/undo': () => import('./icons/core/workflow/undo.svg'),
   'core/workflow/upload': () => import('./icons/core/workflow/upload.svg'),
   'core/workflow/versionHistories': () => import('./icons/core/workflow/versionHistories.svg'),
+  //新增图片
+  'core/workflow/template/WeCom': () => import('./icons/core/workflow/template/WeCom.svg'),
+  'core/workflow/template/HTTP': () => import('./icons/core/workflow/template/HTTP.svg'),
+  'core/workflow/template/historyToFile': () =>
+    import('./icons/core/workflow/template/historyToFile.svg'),
   date: () => import('./icons/date.svg'),
   delete: () => import('./icons/delete.svg'),
   drag: () => import('./icons/drag.svg'),

@@ -29,7 +29,10 @@ const packagePluginList = [
   'databaseConnection',
   'Doc2X',
   'Doc2X/PDF2text',
-  'searchXNG'
+  'searchXNG',
+  'historyToFile',
+  'WeCom',
+  'HttpRequest'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];

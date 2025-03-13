@@ -1,0 +1,769 @@
+{
+  "author": "",
+  "version": "4811",
+  "name": "历史记录转文件",
+  "avatar": "core/workflow/template/historyToFile",
+  "intro": "对话历史记录转文件，返回文件链接",
+  "showStatus": true,
+  "weight": 10,
+
+  "isTool": true,
+  "templateType": "tools",
+
+  "workflow": {
+    "nodes": [
+      {
+        "nodeId": "pluginInput",
+        "name": "workflow:template.plugin_start",
+        "intro": "workflow:intro_plugin_input",
+        "avatar": "core/workflow/template/workflowStart",
+        "flowNodeType": "pluginInput",
+        "showStatus": false,
+        "position": {
+          "x": 303.04463689462875,
+          "y": -196.1868219924591
+        },
+        "version": "481",
+        "inputs": [
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "chatHistory",
+            "canEdit": true,
+            "key": "history",
+            "label": "history",
+            "description": "历史对话的聊天记录",
+            "defaultValue": "",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "required": true,
+            "toolDescription": "历史对话的聊天记录",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "chatHistory"
+              ]
+            }
+          },
+          {
+            "renderTypeList": [
+              "numberInput"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "number",
+            "canEdit": true,
+            "key": "historyCount",
+            "label": "historyCount",
+            "description": "对话的历史记录的长度",
+            "defaultValue": "4",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "required": true,
+            "max": 200,
+            "min": 1
+          },
+          {
+            "renderTypeList": [
+              "input",
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "string",
+            "canEdit": true,
+            "key": "systemName",
+            "label": "systemName",
+            "description": "文件服务器上传文件所需要的系统名称",
+            "defaultValue": "tpaic-ai",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "required": true,
+            "toolDescription": "文件服务器上传文件所需要的系统名称"
+          },
+          {
+            "renderTypeList": [
+              "input",
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "string",
+            "canEdit": true,
+            "key": "password",
+            "label": "password",
+            "description": "文件服务器上传文件所需要的系统密码",
+            "defaultValue": "tpaic-ai",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "required": true,
+            "toolDescription": "文件服务器上传文件所需要的系统密码"
+          },
+          {
+            "renderTypeList": [
+              "select",
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "string",
+            "canEdit": true,
+            "key": "envHostUrl",
+            "label": "envHostUrl",
+            "description": "不同环境的文件服务器的上传地址",
+            "defaultValue": "https://sits.axa.cn/fileServer/",
+            "list": [
+              {
+                "label": "https://sits.axa.cn/fileServer/",
+                "value": "https://sits.axa.cn/fileServer/"
+              },
+              {
+                "label": "https://uats.axa.cn/fileServer/",
+                "value": "https://uats.axa.cn/fileServer/"
+              },
+              {
+                "label": "https://apps.axa.cn/fileServer/",
+                "value": "https://apps.axa.cn/fileServer/"
+              }
+            ],
+            "required": true,
+            "toolDescription": "不同环境的文件服务器的上传地址"
+          },
+          {
+            "renderTypeList": [
+              "input",
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileViewHost",
+            "label": "fileViewHost",
+            "description": "文件预览域名",
+            "defaultValue": "https://sits.axa.cn/fileviewer/onlinePreview?url=",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "required": true,
+            "toolDescription": "文件预览域名"
+          }
+        ],
+        "outputs": [
+          {
+            "id": "sql",
+            "valueType": "chatHistory",
+            "key": "history",
+            "label": "history",
+            "type": "hidden"
+          },
+          {
+            "id": "historyCount",
+            "valueType": "number",
+            "key": "historyCount",
+            "label": "historyCount",
+            "type": "hidden"
+          },
+          {
+            "id": "systemName",
+            "valueType": "string",
+            "key": "systemName",
+            "label": "systemName",
+            "type": "hidden"
+          },
+          {
+            "id": "password",
+            "valueType": "string",
+            "key": "password",
+            "label": "password",
+            "type": "hidden"
+          },
+          {
+            "id": "envHostUrl",
+            "valueType": "string",
+            "key": "envHostUrl",
+            "label": "envHostUrl",
+            "type": "hidden"
+          },
+          {
+            "id": "fileViewHost",
+            "valueType": "string",
+            "key": "fileViewHost",
+            "label": "fileViewHost",
+            "type": "hidden"
+          }
+        ]
+      },
+      {
+        "nodeId": "pluginOutput",
+        "name": "common:core.module.template.self_output",
+        "intro": "workflow:intro_custom_plugin_output",
+        "avatar": "core/workflow/template/pluginOutput",
+        "flowNodeType": "pluginOutput",
+        "showStatus": false,
+        "position": {
+          "x": 1788.4723692358186,
+          "y": -153.2313912808486
+        },
+        "version": "481",
+        "inputs": [
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileUrl",
+            "label": "fileUrl",
+            "isToolOutput": true,
+            "description": "文件的链接",
+            "value": [
+              "b9Mb1i1p8N5K",
+              "ifH7zahiH9T3"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "markdownContent",
+            "label": "markdownContent",
+            "isToolOutput": true,
+            "description": "md文件的原始数据",
+            "value": [
+              "b9Mb1i1p8N5K",
+              "xfFFXBiVp7nZ"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileViewUrl",
+            "label": "fileViewUrl",
+            "isToolOutput": true,
+            "description": "文件预览的地址，可以直接用来预览",
+            "value": [
+              "b9Mb1i1p8N5K",
+              "ovoEyU3oZVaJ"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileId",
+            "label": "fileId",
+            "isToolOutput": true,
+            "description": "文件id",
+            "required": true,
+            "value": [
+              "b9Mb1i1p8N5K",
+              "pw3P0XdOhmqK"
+            ]
+          }
+        ],
+        "outputs": []
+      },
+      {
+        "nodeId": "pluginConfig",
+        "name": "common:core.module.template.system_config",
+        "intro": "",
+        "avatar": "core/workflow/template/systemConfig",
+        "flowNodeType": "pluginConfig",
+        "position": {
+          "x": -158.1159161338209,
+          "y": -255.93777653937644
+        },
+        "version": "4811",
+        "inputs": [],
+        "outputs": []
+      },
+      {
+        "nodeId": "b9Mb1i1p8N5K",
+        "name": "HTTP 请求",
+        "intro": "可以发出一个 HTTP 请求，实现更为复杂的操作（联网搜索、数据库查询等）",
+        "avatar": "core/workflow/template/httpRequest",
+        "flowNodeType": "httpRequest468",
+        "showStatus": true,
+        "position": {
+          "x": 960.4522794583786,
+          "y": -406.3265960253499
+        },
+        "version": "481",
+        "inputs": [
+          {
+            "key": "system_addInputParam",
+            "renderTypeList": [
+              "addInputParam"
+            ],
+            "valueType": "dynamic",
+            "label": "",
+            "required": false,
+            "description": "common:core.module.input.description.HTTP Dynamic Input",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "valueDesc": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpMethod",
+            "renderTypeList": [
+              "custom"
+            ],
+            "valueType": "string",
+            "label": "",
+            "value": "POST",
+            "required": true,
+            "valueDesc": "",
+            "description": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpTimeout",
+            "renderTypeList": [
+              "custom"
+            ],
+            "valueType": "number",
+            "label": "",
+            "value": 30,
+            "min": 5,
+            "max": 600,
+            "required": true,
+            "valueDesc": "",
+            "description": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpReqUrl",
+            "renderTypeList": [
+              "hidden"
+            ],
+            "valueType": "string",
+            "label": "",
+            "description": "common:core.module.input.description.Http Request Url",
+            "placeholder": "https://api.ai.com/getInventory",
+            "required": false,
+            "value": "historyToFile",
+            "valueDesc": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpHeader",
+            "renderTypeList": [
+              "custom"
+            ],
+            "valueType": "any",
+            "value": [],
+            "label": "",
+            "description": "common:core.module.input.description.Http Request Header",
+            "placeholder": "common:core.module.input.description.Http Request Header",
+            "required": false,
+            "valueDesc": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpParams",
+            "renderTypeList": [
+              "hidden"
+            ],
+            "valueType": "any",
+            "value": [],
+            "label": "",
+            "required": false,
+            "valueDesc": "",
+            "description": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpJsonBody",
+            "renderTypeList": [
+              "hidden"
+            ],
+            "valueType": "any",
+            "value": "{\r\n  \"history\":{{history-H}},\r\n  \"historyCount\":{{historyCount-H}},\r\n  \"systemName\":\"{{systemName-H}}\",\r\n  \"password\":\"{{password-H}}\",\r\n  \"envHostUrl\":\"{{envHostUrl-H}}\",\r\n  \"fileViewHost\":\"{{fileViewHost-H}}\"\r\n}",
+            "label": "",
+            "required": false,
+            "valueDesc": "",
+            "description": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpFormBody",
+            "renderTypeList": [
+              "hidden"
+            ],
+            "valueType": "any",
+            "value": [],
+            "label": "",
+            "required": false,
+            "valueDesc": "",
+            "description": "",
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "key": "system_httpContentType",
+            "renderTypeList": [
+              "hidden"
+            ],
+            "valueType": "string",
+            "value": "json",
+            "label": "",
+            "required": false,
+            "debugLabel": "",
+            "toolDescription": ""
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "chatHistory",
+            "canEdit": true,
+            "key": "history-H",
+            "label": "history-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "VARIABLE_NODE_ID",
+              "histories"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "number",
+            "canEdit": true,
+            "key": "historyCount-H",
+            "label": "historyCount-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "pluginInput",
+              "historyCount"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "systemName-H",
+            "label": "systemName-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "pluginInput",
+              "systemName"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "password-H",
+            "label": "password-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "pluginInput",
+              "password"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "envHostUrl-H",
+            "label": "envHostUrl-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "pluginInput",
+              "envHostUrl"
+            ]
+          },
+          {
+            "renderTypeList": [
+              "reference"
+            ],
+            "valueType": "string",
+            "canEdit": true,
+            "key": "fileViewHost-H",
+            "label": "fileViewHost-H",
+            "customInputConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": true
+            },
+            "required": true,
+            "value": [
+              "pluginInput",
+              "fileViewHost"
+            ]
+          }
+        ],
+        "outputs": [
+          {
+            "id": "error",
+            "key": "error",
+            "label": "workflow:request_error",
+            "description": "HTTP请求错误信息，成功时返回空",
+            "valueType": "object",
+            "type": "static"
+          },
+          {
+            "id": "httpRawResponse",
+            "key": "httpRawResponse",
+            "required": true,
+            "label": "workflow:raw_response",
+            "description": "HTTP请求的原始响应。只能接受字符串或JSON类型响应数据。",
+            "valueType": "any",
+            "type": "static"
+          },
+          {
+            "id": "system_addOutputParam",
+            "key": "system_addOutputParam",
+            "type": "dynamic",
+            "valueType": "dynamic",
+            "label": "",
+            "customFieldConfig": {
+              "selectValueTypeList": [
+                "string",
+                "number",
+                "boolean",
+                "object",
+                "arrayString",
+                "arrayNumber",
+                "arrayBoolean",
+                "arrayObject",
+                "arrayAny",
+                "any",
+                "chatHistory",
+                "datasetQuote",
+                "dynamic",
+                "selectApp",
+                "selectDataset"
+              ],
+              "showDescription": false,
+              "showDefaultValue": false
+            },
+            "valueDesc": "",
+            "description": ""
+          },
+          {
+            "id": "ifH7zahiH9T3",
+            "valueType": "string",
+            "type": "dynamic",
+            "key": "fileUrl",
+            "label": "fileUrl"
+          },
+          {
+            "id": "xfFFXBiVp7nZ",
+            "valueType": "string",
+            "type": "dynamic",
+            "key": "markdownContent",
+            "label": "markdownContent"
+          },
+          {
+            "id": "ovoEyU3oZVaJ",
+            "valueType": "string",
+            "type": "dynamic",
+            "key": "fileViewUrl",
+            "label": "fileViewUrl"
+          },
+          {
+            "id": "pw3P0XdOhmqK",
+            "valueType": "string",
+            "type": "dynamic",
+            "key": "fileId",
+            "label": "fileId"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "source": "pluginInput",
+        "target": "b9Mb1i1p8N5K",
+        "sourceHandle": "pluginInput-source-right",
+        "targetHandle": "b9Mb1i1p8N5K-target-left"
+      },
+      {
+        "source": "b9Mb1i1p8N5K",
+        "target": "pluginOutput",
+        "sourceHandle": "b9Mb1i1p8N5K-source-right",
+        "targetHandle": "pluginOutput-target-left"
+      }
+    ]
+  }
+}
