@@ -94,7 +94,7 @@ const IframeHtmlCodeBlock = ({
 }) => {
   const { t } = useTranslation();
   const { copyData } = useCopyData();
-  const [viewMode, setViewMode] = useState<'source' | 'iframe'>('source');
+  const [viewMode, setViewMode] = useState<'source' | 'iframe'>('iframe');
   const isPreview = viewMode === 'iframe';
 
   const { isOpen, onOpen, onClose } = useDisclosure();
