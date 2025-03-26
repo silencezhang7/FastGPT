@@ -40,18 +40,13 @@ export const DatasetSelectModal = ({
   const { paths, setParentId, datasets, isFetching } = useDatasetSelect();
   const { Loading } = useLoading();
 
-  const filterDatasets = useMemo(() => {
-    const filtered = {
-      selected: datasets.filter((item) =>
-        selectedDatasets.find((dataset) => dataset.datasetId === item._id)
-      ),
-      unSelected: datasets.filter(
-        (item) => !selectedDatasets.find((dataset) => dataset.datasetId === item._id)
-      )
-    };
-    return filtered;
+  const unSelectedDatasets = useMemo(() => {
+    return datasets.filter(
+      (item) => !selectedDatasets.some((dataset) => dataset.datasetId === item._id)
+    );
   }, [datasets, selectedDatasets]);
-  const activeVectorModel = defaultSelectedDatasets[0]?.vectorModel?.model;
+
+  const activeVectorModel = selectedDatasets[0]?.vectorModel?.model;
 
   return (
     <DatasetSelectContainer
@@ -71,11 +66,11 @@ export const DatasetSelectModal = ({
             ]}
             gridGap={3}
           >
-            {filterDatasets.selected.map((item) =>
+            {selectedDatasets.map((item) =>
               (() => {
                 return (
                   <Card
-                    key={item._id}
+                    key={item.datasetId}
                     p={3}
                     border={theme.borders.base}
                     boxShadow={'sm'}
@@ -93,7 +88,7 @@ export const DatasetSelectModal = ({
                         _hover={{ color: 'red.500' }}
                         onClick={() => {
                           setSelectedDatasets((state) =>
-                            state.filter((dataset) => dataset.datasetId !== item._id)
+                            state.filter((dataset) => dataset.datasetId !== item.datasetId)
                           );
                         }}
                       />
@@ -104,7 +99,7 @@ export const DatasetSelectModal = ({
             )}
           </Grid>
 
-          {filterDatasets.selected.length > 0 && <Divider my={3} />}
+          {selectedDatasets.length > 0 && <Divider my={3} />}
 
           <Grid
             gridTemplateColumns={[
@@ -114,7 +109,7 @@ export const DatasetSelectModal = ({
             ]}
             gridGap={3}
           >
-            {filterDatasets.unSelected.map((item) =>
+            {unSelectedDatasets.map((item) =>
               (() => {
                 return (
                   <MyTooltip
@@ -174,7 +169,9 @@ export const DatasetSelectModal = ({
                         alignItems={'center'}
                         fontSize={'sm'}
                         color={
-                          activeVectorModel === item.vectorModel.name ? 'primary.600' : 'myGray.500'
+                          activeVectorModel === item.vectorModel.model
+                            ? 'primary.600'
+                            : 'myGray.500'
                         }
                       >
                         {item.type === DatasetTypeEnum.folder ? (
@@ -192,21 +189,14 @@ export const DatasetSelectModal = ({
               })()
             )}
           </Grid>
-          {filterDatasets.unSelected.length === 0 && (
-            <EmptyTip text={t('common:common.folder.empty')} />
-          )}
+          {unSelectedDatasets.length === 0 && <EmptyTip text={t('common:common.folder.empty')} />}
         </ModalBody>
 
         <ModalFooter>
           <Button
             onClick={() => {
-              // filter out the dataset that is not in the kList
-              const filterDatasets = selectedDatasets.filter((dataset) => {
-                return datasets.find((item) => item._id === dataset.datasetId);
-              });
-
               onClose();
-              onChange(filterDatasets);
+              onChange(selectedDatasets);
             }}
           >
             {t('common:common.Done')}
