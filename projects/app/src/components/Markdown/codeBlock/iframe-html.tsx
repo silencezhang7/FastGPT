@@ -94,7 +94,7 @@ const IframeHtmlCodeBlock = ({
 }) => {
   const { t } = useTranslation();
   const { copyData } = useCopyData();
-  const [viewMode, setViewMode] = useState<'source' | 'iframe'>('iframe');
+  const [viewMode, setViewMode] = useState<'source' | 'iframe'>('source');
   const isPreview = viewMode === 'iframe';
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -172,6 +172,29 @@ const IframeHtmlCodeBlock = ({
               <Icon name="copy" width="14px" />
             </Flex>
           </Box>
+        </Flex>
+        {isPreview ? (
+          <Box w={width} h="60vh">
+            {Iframe}
+          </Box>
+        ) : (
+          <SyntaxHighlighter style={codeLight as any} language={match?.[1]} PreTag="pre">
+            {String(children).replace(/&nbsp;/g, ' ')}
+          </SyntaxHighlighter>
+        )}
+        <Flex
+          py={2}
+          px={4}
+          justifyContent="flex-end"
+          gap={1.5}
+          {...(isPreview
+            ? {
+                bg: 'myGray.25'
+              }
+            : {
+                bg: 'myGray.800'
+              })}
+        >
           <StyledButton
             label={t('common:common.Code')}
             iconName="code"
@@ -196,15 +219,6 @@ const IframeHtmlCodeBlock = ({
             isMobile={isMobile}
           />
         </Flex>
-        {isPreview ? (
-          <Box w={width} h="60vh">
-            {Iframe}
-          </Box>
-        ) : (
-          <SyntaxHighlighter style={codeLight as any} language={match?.[1]} PreTag="pre">
-            {String(children).replace(/&nbsp;/g, ' ')}
-          </SyntaxHighlighter>
-        )}
 
         {isOpen && (
           <Modal onClose={onClose} isOpen size={'full'}>
