@@ -32,7 +32,9 @@ const packagePluginList = [
   'searchXNG',
   'historyToFile',
   'WeCom',
-  'HttpRequest'
+  'HttpRequest',
+  'searchXNG',
+  'smtpEmail'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];
