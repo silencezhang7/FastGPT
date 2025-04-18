@@ -49,6 +49,7 @@ export type FastGPTFeConfigsType = {
   find_password_method?: ['email' | 'phone'];
   bind_notification_method?: ['email' | 'phone'];
   googleClientVerKey?: string;
+  mcpServerProxyEndpoint?: string;
 
   show_emptyChat?: boolean;
   show_appStore?: boolean;
@@ -118,11 +119,12 @@ export type SystemEnvType = {
   oneapiUrl?: string;
   chatApiKey?: string;
 
-  customPdfParse?: {
-    url?: string;
-    key?: string;
+  customPdfParse?: customPdfParseType;
+};
 
-    doc2xKey?: string;
-    price?: number; // n points/1 page
-  };
+export type customPdfParseType = {
+  url?: string;
+  key?: string;
+  doc2xKey?: string;
+  price?: number;
 };
