@@ -301,6 +301,8 @@ export const iconPaths = {
   'core/workflow/template/google': () => import('./icons/core/workflow/template/google.svg'),
   'core/workflow/template/httpRequest': () =>
     import('./icons/core/workflow/template/httpRequest.svg'),
+  'core/workflow/template/authentication': () =>
+    import('./icons/core/workflow/template/authentication.svg'),
   'core/workflow/template/ifelse': () => import('./icons/core/workflow/template/ifelse.svg'),
   'core/workflow/template/lafDispatch': () =>
     import('./icons/core/workflow/template/lafDispatch.svg'),

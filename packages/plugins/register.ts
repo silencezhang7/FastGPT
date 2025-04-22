@@ -34,7 +34,8 @@ const packagePluginList = [
   'WeCom',
   'HttpRequest',
   'searchXNG',
-  'smtpEmail'
+  'smtpEmail',
+  'authentication'
 ];
 
 export const list = [...staticPluginList, ...packagePluginList];
