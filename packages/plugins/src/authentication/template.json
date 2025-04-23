@@ -153,9 +153,9 @@
             "selectedTypeIndex": 0,
             "valueType": "string",
             "canEdit": true,
-            "key": "redirect_uri",
-            "label": "redirect_uri",
-            "description": "重定向url",
+            "key": "chat_id",
+            "label": "chat_id",
+            "description": "当前的对话id",
             "defaultValue": "",
             "list": [
               {
@@ -167,7 +167,7 @@
             "canSelectFile": true,
             "canSelectImg": true,
             "required": true,
-            "toolDescription": "重定向url"
+            "toolDescription": "当前的对话id"
           }
         ],
         "outputs": [
@@ -209,8 +209,8 @@
           {
             "id": "redirect_uri",
             "valueType": "string",
-            "key": "redirect_uri",
-            "label": "redirect_uri",
+            "key": "chat_id",
+            "label": "chat_id",
             "type": "hidden"
           }
         ]
@@ -436,7 +436,7 @@
               "hidden"
             ],
             "valueType": "any",
-            "value": "{\n\t\"requestUrl\":\"{{$j8mpn77X9n7O.requestUrl-H$}}\",\n\t\"grant_type\":\"{{$j8mpn77X9n7O.grant_type-H$}}\",\n\t\"code\":\"{{$j8mpn77X9n7O.code-H$}}\",\n\t\"client_id\":\"{{$j8mpn77X9n7O.client_id-H$}}\",\n\t\"client_secret\":\"{{$j8mpn77X9n7O.client_secret-H$}}\",\n\t\"redirect_uri\":\"{{$j8mpn77X9n7O.redirect_uri-H$}}\"\n}",
+            "value": "{\n\t\"requestUrl\":\"{{$j8mpn77X9n7O.requestUrl-H$}}\",\n\t\"grant_type\":\"{{$j8mpn77X9n7O.grant_type-H$}}\",\n\t\"code\":\"{{$j8mpn77X9n7O.code-H$}}\",\n\t\"client_id\":\"{{$j8mpn77X9n7O.client_id-H$}}\",\n\t\"client_secret\":\"{{$j8mpn77X9n7O.client_secret-H$}}\",\n\t\"chat_id\":\"{{$j8mpn77X9n7O.chat_id-H$}}\"\n}",
             "label": "",
             "required": false,
             "valueDesc": "",
@@ -651,8 +651,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "redirect_uri-H",
-            "label": "redirect_uri-H",
+            "key": "chat_id-H",
+            "label": "chat_id-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",

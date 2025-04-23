@@ -1,43 +1,44 @@
+import Redis from 'ioredis';
+
+const redis = new Redis('redis');
+
 type Props = {
   requestUrl: string;
   code: string;
   grant_type: string;
   client_id: string;
   client_secret: string;
-  redirect_uri: string;
-};
-
-// 定义成功响应类型
-type SuccessResponse = {
-  access_token: string;
-  token_type: string;
-  refresh_token?: string;
-  expires_in?: number;
-  scope?: string;
-};
-
-// 定义错误响应类型
-type ErrorResponse = {
-  error: string;
-  error_description: string;
+  chat_id: string;
 };
 
 type Response = Promise<{
   code: string;
   msg: string;
-  data: SuccessResponse | ErrorResponse | null;
+  data: any;
 }>;
 
 const main = async (props: Props): Response => {
   try {
-    const { requestUrl, code, grant_type, client_id, client_secret, redirect_uri } = props;
+    const { requestUrl, code, grant_type, client_id, client_secret, chat_id } = props;
+
+    // 首先检查Redis中是否有缓存
+    if (chat_id) {
+      const cachedData = await redis.get(chat_id);
+      if (cachedData) {
+        return {
+          code: '200',
+          msg: 'Success (cached)',
+          data: JSON.parse(cachedData)
+        };
+      }
+    }
 
     // 构建查询参数
     const queryParams = new URLSearchParams();
     queryParams.append('grant_type', grant_type);
     queryParams.append('code', code);
-    if (redirect_uri) {
-      queryParams.append('redirect_uri', redirect_uri);
+    if (chat_id) {
+      queryParams.append('redirect_uri', chat_id);
     }
 
     // 创建Basic认证头
@@ -52,25 +53,42 @@ const main = async (props: Props): Response => {
       body: queryParams.toString()
     });
 
-    // 直接解析JSON响应
     const jsonResponse = await response.json();
 
     // 检查是否是错误响应
     if ('error' in jsonResponse) {
-      const errorResponse = jsonResponse as ErrorResponse;
-      return {
-        code: '400', // 使用400表示客户端错误
-        msg: errorResponse.error_description || 'Authorization failed',
-        data: errorResponse
-      };
+      // 特殊处理Redirect URI mismatch情况
+      if (
+        jsonResponse.error_description &&
+        jsonResponse.error_description.includes('Redirect URI mismatch')
+      ) {
+        // 将成功响应存入Redis
+        if (chat_id) {
+          await redis.setex(chat_id, 3600, JSON.stringify(jsonResponse)); // 60分钟 = 3600秒
+        }
+        return {
+          code: '200',
+          msg: 'Success (Redirect URI mismatch allowed)',
+          data: jsonResponse
+        };
+      } else {
+        // 其他错误情况
+        return {
+          code: '400',
+          msg: jsonResponse.error_description || 'Authorization failed',
+          data: jsonResponse
+        };
+      }
     }
 
-    // 成功响应
-    const successResponse = jsonResponse as SuccessResponse;
+    // 成功响应处理
+    if (chat_id) {
+      await redis.setex(chat_id, 3600, JSON.stringify(jsonResponse)); // 60分钟 = 3600秒
+    }
     return {
       code: '200',
       msg: 'Success',
-      data: successResponse
+      data: jsonResponse
     };
   } catch (error: unknown) {
     // 处理网络错误或其他异常
