@@ -74,15 +74,15 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
   watch(() => {
     setRefresh(!refresh);
   });
-  const nginxURL = process.env.NGINX_URL ?? 'http://10.138.93.58:8080';
+  const oauthTokenURL =
+    process.env.OAUTH_TOKEN_URL ??
+    'https://sits.axa.cn/ssooauth2/oauth/authorize?client_id=cs01&response_type=code&state=csEx82&redirect_uri=';
   const baseUrl = feConfigs?.customSharePageDomain || location?.origin;
   const linkUrl = `${baseUrl}${subRoute ? `${subRoute}/` : '/'}chat/share?shareId=${share?.shareId}${
     getValues('showHistory') ? '' : '&showHistory=0'
   }`;
 
-  const authLinkUrl = `${nginxURL}/chat/share?shareId=${share?.shareId}${
-    getValues('showHistory') ? '' : '&showHistory=0'
-  }`;
+  const authLinkUrl = `${oauthTokenURL}${linkUrl}`;
 
   const wayMap = {
     [UsingWayEnum.link]: {
