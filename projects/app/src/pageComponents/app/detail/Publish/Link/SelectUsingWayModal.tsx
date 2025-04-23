@@ -52,6 +52,7 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
       showHistory: true,
       scriptIconCanDrag: false,
       scriptDefaultOpen: false,
+      enableAuth: false, // 新增权限认证开关
       scriptOpenIcon:
         'data:image/svg+xml;base64,PHN2ZyB0PSIxNjkwNTMyNzg1NjY0IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjQxMzIiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNTEyIDMyQzI0Ny4wNCAzMiAzMiAyMjQgMzIgNDY0QTQxMC4yNCA0MTAuMjQgMCAwIDAgMTcyLjQ4IDc2OEwxNjAgOTY1LjEyYTI1LjI4IDI1LjI4IDAgMCAwIDM5LjA0IDIyLjRsMTY4LTExMkE1MjguNjQgNTI4LjY0IDAgMCAwIDUxMiA4OTZjMjY0Ljk2IDAgNDgwLTE5MiA0ODAtNDMyUzc3Ni45NiAzMiA1MTIgMzJ6IG0yNDQuOCA0MTZsLTM2MS42IDMwMS43NmExMi40OCAxMi40OCAwIDAgMS0xOS44NC0xMi40OGw1OS4yLTIzMy45MmgtMTYwYTEyLjQ4IDEyLjQ4IDAgMCAxLTcuMzYtMjMuMzZsMzYxLjYtMzAxLjc2YTEyLjQ4IDEyLjQ4IDAgMCAxIDE5Ljg0IDEyLjQ4bC01OS4yIDIzMy45MmgxNjBhMTIuNDggMTIuNDggMCAwIDEgOCAyMi4wOHoiIGZpbGw9IiM0ZTgzZmQiIHAtaWQ9IjQxMzMiPjwvcGF0aD48L3N2Zz4=',
       scriptCloseIcon:
@@ -73,21 +74,25 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
   watch(() => {
     setRefresh(!refresh);
   });
-
+  const nginxURL = process.env.NGINX_URL ?? 'http://10.138.93.58:8080';
   const baseUrl = feConfigs?.customSharePageDomain || location?.origin;
   const linkUrl = `${baseUrl}${subRoute ? `${subRoute}/` : '/'}chat/share?shareId=${share?.shareId}${
+    getValues('showHistory') ? '' : '&showHistory=0'
+  }`;
+
+  const authLinkUrl = `${nginxURL}/chat/share?shareId=${share?.shareId}${
     getValues('showHistory') ? '' : '&showHistory=0'
   }`;
 
   const wayMap = {
     [UsingWayEnum.link]: {
       blockTitle: t('common:core.app.outLink.Link block title'),
-      code: linkUrl
+      code: getValues('enableAuth') ? authLinkUrl : linkUrl // 根据开关状态选择URL
     },
     [UsingWayEnum.iframe]: {
       blockTitle: t('common:core.app.outLink.Iframe block title'),
       code: `<iframe
-  src="${linkUrl}"
+  src="${getValues('enableAuth') ? authLinkUrl : linkUrl}" // 根据开关状态选择URL
   style="width: 100%; height: 100%;"
   frameborder="0" 
   allow="microphone *; *"
@@ -99,7 +104,7 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
   type="text/javascript"
   src="${baseUrl}/js/iframe.js"
   id="chatbot-iframe" 
-  data-bot-src="${linkUrl}" 
+  data-bot-src="${getValues('enableAuth') ? authLinkUrl : linkUrl}" // 根据开关状态选择URL
   data-default-open="${getValues('scriptDefaultOpen') ? 'true' : 'false'}"
   data-drag="${getValues('scriptIconCanDrag') ? 'true' : 'false'}"
   data-open-icon="${getValues('scriptOpenIcon')}"
@@ -149,6 +154,10 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
           <Flex {...gridItemStyle}>
             <Box flex={1}>{t('common:core.app.outLink.Show History')}</Box>
             <Switch {...register('showHistory')} />
+          </Flex>
+          <Flex {...gridItemStyle}>
+            <Box flex={1}>权限认证</Box>
+            <Switch {...register('enableAuth')} />
           </Flex>
           {getValues('usingWay') === UsingWayEnum.script && (
             <>
