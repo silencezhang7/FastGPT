@@ -82,7 +82,7 @@ const SelectUsingWayModal = ({ share, onClose }: { share: OutLinkSchema; onClose
     getValues('showHistory') ? '' : '&showHistory=0'
   }`;
 
-  const authLinkUrl = `${oauthTokenURL}${linkUrl}`;
+  const authLinkUrl = `${oauthTokenURL}${linkUrl.replace(/^https:\/\//, 'http://')}`;
 
   const wayMap = {
     [UsingWayEnum.link]: {
