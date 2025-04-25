@@ -65,7 +65,7 @@ const main = async (props: Props): Response => {
     const userInfoResponse = await fetch(userInfoUrl);
     const userInfo = await userInfoResponse.json();
 
-    if (userInfo.errcode !== 0) {
+    if (userInfo.errcode !== 0 || userInfo.userid == null) {
       return {
         code: '400',
         msg: userInfo.errmsg || 'Failed to get user info',
