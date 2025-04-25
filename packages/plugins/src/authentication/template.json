@@ -33,9 +33,9 @@
             "selectedTypeIndex": 0,
             "valueType": "string",
             "canEdit": true,
-            "key": "requestUrl",
-            "label": "requestUrl",
-            "description": "请求地址",
+            "key": "corpId",
+            "label": "corpId",
+            "description": "企业微信的企业ID",
             "defaultValue": "",
             "list": [
               {
@@ -47,7 +47,31 @@
             "canSelectFile": true,
             "canSelectImg": true,
             "required": true,
-            "toolDescription": "请求地址"
+            "toolDescription": "企业微信的企业ID"
+          },
+          {
+            "renderTypeList": [
+              "input",
+              "reference"
+            ],
+            "selectedTypeIndex": 0,
+            "valueType": "string",
+            "canEdit": true,
+            "key": "corpSecret",
+            "label": "corpSecret",
+            "description": "自建应用的Secret",
+            "defaultValue": "",
+            "list": [
+              {
+                "label": "",
+                "value": ""
+              }
+            ],
+            "maxFiles": 5,
+            "canSelectFile": true,
+            "canSelectImg": true,
+            "required": true,
+            "toolDescription": "自建应用的Secret"
           },
           {
             "renderTypeList": [
@@ -81,78 +105,6 @@
             "selectedTypeIndex": 0,
             "valueType": "string",
             "canEdit": true,
-            "key": "grant_type",
-            "label": "grant_type",
-            "description": "认证方式",
-            "defaultValue": "authorization_code",
-            "list": [
-              {
-                "label": "",
-                "value": ""
-              }
-            ],
-            "maxFiles": 5,
-            "canSelectFile": true,
-            "canSelectImg": true,
-            "required": true,
-            "toolDescription": "认证方式"
-          },
-          {
-            "renderTypeList": [
-              "input",
-              "reference"
-            ],
-            "selectedTypeIndex": 0,
-            "valueType": "string",
-            "canEdit": true,
-            "key": "client_id",
-            "label": "client_id",
-            "description": "客户端ID",
-            "defaultValue": "",
-            "list": [
-              {
-                "label": "",
-                "value": ""
-              }
-            ],
-            "maxFiles": 5,
-            "canSelectFile": true,
-            "canSelectImg": true,
-            "required": true,
-            "toolDescription": "客户端ID"
-          },
-          {
-            "renderTypeList": [
-              "input",
-              "reference"
-            ],
-            "selectedTypeIndex": 0,
-            "valueType": "string",
-            "canEdit": true,
-            "key": "client_secret",
-            "label": "client_secret",
-            "description": "客户端密钥",
-            "defaultValue": "",
-            "list": [
-              {
-                "label": "",
-                "value": ""
-              }
-            ],
-            "maxFiles": 5,
-            "canSelectFile": true,
-            "canSelectImg": true,
-            "required": true,
-            "toolDescription": "客户端密钥"
-          },
-          {
-            "renderTypeList": [
-              "input",
-              "reference"
-            ],
-            "selectedTypeIndex": 0,
-            "valueType": "string",
-            "canEdit": true,
             "key": "chat_id",
             "label": "chat_id",
             "description": "当前的对话id",
@@ -174,36 +126,22 @@
           {
             "id": "corpid",
             "valueType": "string",
-            "key": "requestUrl",
-            "label": "requestUrl",
+            "key": "corpId",
+            "label": "corpId",
             "type": "hidden"
           },
           {
             "id": "corpsecret",
             "valueType": "string",
-            "key": "code",
-            "label": "code",
-            "type": "hidden"
-          },
-          {
-            "id": "grant_type",
-            "valueType": "string",
-            "key": "grant_type",
-            "label": "grant_type",
-            "type": "hidden"
-          },
-          {
-            "id": "client_id",
-            "valueType": "string",
-            "key": "client_id",
-            "label": "client_id",
+            "key": "corpSecret",
+            "label": "corpSecret",
             "type": "hidden"
           },
           {
             "id": "client_secret",
             "valueType": "string",
-            "key": "client_secret",
-            "label": "client_secret",
+            "key": "code",
+            "label": "code",
             "type": "hidden"
           },
           {
@@ -436,7 +374,7 @@
               "hidden"
             ],
             "valueType": "any",
-            "value": "{\n\t\"requestUrl\":\"{{$j8mpn77X9n7O.requestUrl-H$}}\",\n\t\"grant_type\":\"{{$j8mpn77X9n7O.grant_type-H$}}\",\n\t\"code\":\"{{$j8mpn77X9n7O.code-H$}}\",\n\t\"client_id\":\"{{$j8mpn77X9n7O.client_id-H$}}\",\n\t\"client_secret\":\"{{$j8mpn77X9n7O.client_secret-H$}}\",\n\t\"chat_id\":\"{{$j8mpn77X9n7O.chat_id-H$}}\"\n}",
+            "value": "{\n\t\"corpId\":\"{{$j8mpn77X9n7O.corpId-H$}}\",\n\t\"corpSecret\":\"{{$j8mpn77X9n7O.corpSecret-H$}}\",\n\t\"code\":\"{{$j8mpn77X9n7O.code-H$}}\",\n\t\"chat_id\":\"{{$j8mpn77X9n7O.chat_id-H$}}\"\n}",
             "label": "",
             "required": false,
             "valueDesc": "",
@@ -476,8 +414,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "requestUrl-H",
-            "label": "requestUrl-H",
+            "key": "corpId-H",
+            "label": "corpId-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -511,8 +449,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "code-H",
-            "label": "code-H",
+            "key": "corpSecret-H",
+            "label": "corpSecret-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -546,78 +484,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "grant_type-H",
-            "label": "grant_type-H",
-            "customInputConfig": {
-              "selectValueTypeList": [
-                "string",
-                "number",
-                "boolean",
-                "object",
-                "arrayString",
-                "arrayNumber",
-                "arrayBoolean",
-                "arrayObject",
-                "arrayAny",
-                "any",
-                "chatHistory",
-                "datasetQuote",
-                "dynamic",
-                "selectDataset",
-                "selectApp"
-              ],
-              "showDescription": false,
-              "showDefaultValue": true
-            },
-            "required": true,
-            "value": [
-              "pluginInput",
-              "grant_type"
-            ]
-          },
-          {
-            "renderTypeList": [
-              "reference"
-            ],
-            "valueType": "string",
-            "canEdit": true,
-            "key": "client_id-H",
-            "label": "client_id-H",
-            "customInputConfig": {
-              "selectValueTypeList": [
-                "string",
-                "number",
-                "boolean",
-                "object",
-                "arrayString",
-                "arrayNumber",
-                "arrayBoolean",
-                "arrayObject",
-                "arrayAny",
-                "any",
-                "chatHistory",
-                "datasetQuote",
-                "dynamic",
-                "selectDataset",
-                "selectApp"
-              ],
-              "showDescription": false,
-              "showDefaultValue": true
-            },
-            "required": true,
-            "value": [
-              "pluginInput",
-              "client_id"
-            ]
-          },
-          {
-            "renderTypeList": [
-              "reference"
-            ],
-            "valueType": "string",
-            "canEdit": true,
-            "key": "client_secret-H",
-            "label": "client_secret-H",
+            "key": "code-H",
+            "label": "code-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -768,9 +636,13 @@
       }
     ],
     "chatConfig": {
-      "welcomeText": "",
       "variables": [],
-      "questionGuide": false,
+      "_id": "68085be61b60255847f590d1",
+      "questionGuide": {
+        "open": false,
+        "model": "gpt-4o-mini",
+        "customPrompt": ""
+      },
       "ttsConfig": {
         "type": "web"
       },
@@ -784,12 +656,12 @@
         "textList": [],
         "customUrl": ""
       },
-      "instruction": "可以针对userid发送企业微信消息",
+      "instruction": "",
       "autoExecute": {
         "open": false,
         "defaultPrompt": ""
       },
-      "_id": "6750294cde584d5ec9eeab96"
+      "welcomeText": ""
     }
   }
 }
