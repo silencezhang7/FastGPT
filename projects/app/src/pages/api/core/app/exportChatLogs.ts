@@ -5,18 +5,19 @@ import { WritePermissionVal } from '@fastgpt/global/support/permission/constant'
 import { readFromSecondary } from '@fastgpt/service/common/mongo/utils';
 import { addLog } from '@fastgpt/service/common/system/log';
 import dayjs from 'dayjs';
-import { ApiRequestProps } from '@fastgpt/service/type/next';
+import { type ApiRequestProps } from '@fastgpt/service/type/next';
 import { replaceRegChars } from '@fastgpt/global/common/string/tools';
 import { NextAPI } from '@/service/middleware/entry';
 import { useIPFrequencyLimit } from '@fastgpt/service/common/middle/reqFrequencyLimit';
-import { GetAppChatLogsProps } from '@/global/core/api/appReq';
+import { type GetAppChatLogsProps } from '@/global/core/api/appReq';
 import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { Types } from 'mongoose';
 import { MongoChat } from '@fastgpt/service/core/chat/chatSchema';
 import { ChatItemCollectionName } from '@fastgpt/service/core/chat/chatItemSchema';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
-import { ChatItemValueTypeEnum, ChatSourceEnum } from '@fastgpt/global/core/chat/constants';
-import { AIChatItemValueItemType } from '@fastgpt/global/core/chat/type';
+import type { ChatSourceEnum } from '@fastgpt/global/core/chat/constants';
+import { ChatItemValueTypeEnum } from '@fastgpt/global/core/chat/constants';
+import { type AIChatItemValueItemType } from '@fastgpt/global/core/chat/type';
 
 const formatJsonString = (data: any) => {
   return JSON.stringify(data).replace(/"/g, '""').replace(/\n/g, '\\n');
@@ -67,7 +68,6 @@ async function handler(req: ApiRequestProps<ExportChatLogsBody, {}>, res: NextAp
       }
     }
   ]);
-  console.log(teamMemberWithContact);
 
   const where = {
     teamId: new Types.ObjectId(teamId),
@@ -161,7 +161,7 @@ async function handler(req: ApiRequestProps<ExportChatLogsBody, {}>, res: NextAp
           },
           chatDetails: {
             $map: {
-              input: '$chatitems',
+              input: { $slice: ['$chatitems', -1000] },
               as: 'item',
               in: {
                 id: '$$item._id',

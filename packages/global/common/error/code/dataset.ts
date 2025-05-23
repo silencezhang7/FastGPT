@@ -1,5 +1,5 @@
 import { i18nT } from '../../../../web/i18n/utils';
-import { ErrType } from '../errorCode';
+import { type ErrType } from '../errorCode';
 
 /* dataset: 501000 */
 export enum DatasetErrEnum {
@@ -27,7 +27,7 @@ const datasetErr = [
   },
   {
     statusText: DatasetErrEnum.unExist,
-    message: 'core.dataset.error.unExistDataset'
+    message: i18nT('common:core.dataset.error.unExistDataset')
   },
   {
     statusText: DatasetErrEnum.unExistCollection,

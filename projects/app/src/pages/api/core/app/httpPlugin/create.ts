@@ -6,11 +6,12 @@ import { WritePermissionVal } from '@fastgpt/global/support/permission/constant'
 import type { ApiRequestProps, ApiResponseType } from '@fastgpt/service/type/next';
 import { NextAPI } from '@/service/middleware/entry';
 import { onCreateApp, type CreateAppBody } from '../create';
-import { AppSchema } from '@fastgpt/global/core/app/type';
+import { type AppSchema } from '@fastgpt/global/core/app/type';
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
 import { pushTrack } from '@fastgpt/service/common/middle/tracks/utils';
 import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { TeamAppCreatePermissionVal } from '@fastgpt/global/support/permission/user/constant';
+import { checkTeamAppLimit } from '@fastgpt/service/support/permission/teamLimit';
 
 export type createHttpPluginQuery = {};
 
@@ -35,9 +36,11 @@ async function handler(
     ? await authApp({ req, appId: parentId, per: TeamAppCreatePermissionVal, authToken: true })
     : await authUserPer({ req, authToken: true, per: TeamAppCreatePermissionVal });
 
-  await mongoSessionRun(async (session) => {
+  await checkTeamAppLimit(teamId);
+
+  const httpPluginId = await mongoSessionRun(async (session) => {
     // create http plugin folder
-    const httpPluginIid = await onCreateApp({
+    const httpPluginId = await onCreateApp({
       parentId,
       name,
       avatar,
@@ -51,7 +54,7 @@ async function handler(
 
     // compute children plugins
     const childrenPlugins = await httpApiSchema2Plugins({
-      parentId: httpPluginIid,
+      parentId: httpPluginId,
       apiSchemaStr: pluginData.apiSchemaStr,
       customHeader: pluginData.customHeaders
     });
@@ -65,10 +68,13 @@ async function handler(
         session
       });
     }
+
+    return httpPluginId;
   });
 
   pushTrack.createApp({
     type: AppTypeEnum.httpPlugin,
+    appId: httpPluginId,
     uid: userId,
     teamId,
     tmbId

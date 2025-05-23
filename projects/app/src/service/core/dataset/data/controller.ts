@@ -1,16 +1,19 @@
 import { MongoDatasetData } from '@fastgpt/service/core/dataset/data/schema';
 import {
-  CreateDatasetDataProps,
-  PatchIndexesProps,
-  UpdateDatasetDataProps
+  type CreateDatasetDataProps,
+  type PatchIndexesProps,
+  type UpdateDatasetDataProps
 } from '@fastgpt/global/core/dataset/controller';
-import { insertDatasetDataVector } from '@fastgpt/service/common/vectorStore/controller';
+import { insertDatasetDataVector } from '@fastgpt/service/common/vectorDB/controller';
 import { jiebaSplit } from '@fastgpt/service/common/string/jieba/index';
-import { deleteDatasetDataVector } from '@fastgpt/service/common/vectorStore/controller';
-import { DatasetDataIndexItemType, DatasetDataItemType } from '@fastgpt/global/core/dataset/type';
-import { getEmbeddingModel, getLLMModel } from '@fastgpt/service/core/ai/model';
+import { deleteDatasetDataVector } from '@fastgpt/service/common/vectorDB/controller';
+import {
+  type DatasetDataIndexItemType,
+  type DatasetDataItemType
+} from '@fastgpt/global/core/dataset/type';
+import { getEmbeddingModel } from '@fastgpt/service/core/ai/model';
 import { mongoSessionRun } from '@fastgpt/service/common/mongo/sessionRun';
-import { ClientSession } from '@fastgpt/service/common/mongo';
+import { type ClientSession } from '@fastgpt/service/common/mongo';
 import { MongoDatasetDataText } from '@fastgpt/service/core/dataset/data/dataTextSchema';
 import { DatasetDataIndexTypeEnum } from '@fastgpt/global/core/dataset/data/constants';
 import { splitText2Chunks } from '@fastgpt/global/common/string/textSplitter';
@@ -90,13 +93,15 @@ const formatIndexes = async ({
       return item;
     }
   });
-  indexes = indexes.filter((item) => item.type !== DatasetDataIndexTypeEnum.default);
-  indexes.push(...concatDefaultIndexes);
 
-  // Remove same text
+  // 其他索引不能与默认索引相同，且不能自己有重复
   indexes = indexes.filter(
-    (item, index, self) => index === self.findIndex((t) => t.text === item.text)
+    (item, index, self) =>
+      item.type !== DatasetDataIndexTypeEnum.default &&
+      !concatDefaultIndexes.find((t) => t.text === item.text) &&
+      index === self.findIndex((t) => t.text === item.text)
   );
+  indexes.push(...concatDefaultIndexes);
 
   const chekcIndexes = (
     await Promise.all(

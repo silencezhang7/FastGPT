@@ -1,10 +1,10 @@
 import { NextAPI } from '@/service/middleware/entry';
 import { DatasetErrEnum } from '@fastgpt/global/common/error/code/dataset';
-import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
+import { type ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
-import { useApiDatasetRequest } from '@fastgpt/service/core/dataset/apiDataset/api';
+import { getApiDatasetRequest } from '@fastgpt/service/core/dataset/apiDataset';
 import { authDataset } from '@fastgpt/service/support/permission/dataset/auth';
-import { NextApiRequest } from 'next';
+import { type NextApiRequest } from 'next';
 
 export type GetApiDatasetFileListProps = {
   searchKey?: string;
@@ -27,18 +27,13 @@ async function handler(req: NextApiRequest) {
   const feishuServer = dataset.feishuServer;
   const yuqueServer = dataset.yuqueServer;
 
-  if (apiServer) {
-    return useApiDatasetRequest({ apiServer }).listFiles({ searchKey, parentId });
-  }
-  if (feishuServer || yuqueServer) {
-    return global.getProApiDatasetFileList({
-      feishuServer,
+  return (
+    await getApiDatasetRequest({
+      apiServer,
       yuqueServer,
-      parentId
-    });
-  }
-
-  return Promise.reject(DatasetErrEnum.noApiServer);
+      feishuServer
+    })
+  ).listFiles({ searchKey, parentId });
 }
 
 export default NextAPI(handler);

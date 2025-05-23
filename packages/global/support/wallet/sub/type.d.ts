@@ -1,4 +1,4 @@
-import { StandardSubLevelEnum, SubModeEnum, SubTypeEnum } from './constants';
+import type { StandardSubLevelEnum, SubModeEnum, SubTypeEnum } from './constants';
 
 // Content of plan
 export type TeamStandardSubPlanItemType = {
@@ -15,7 +15,7 @@ export type TeamStandardSubPlanItemType = {
   permissionCustomApiKey: boolean;
   permissionCustomCopyright: boolean; // feature
   permissionWebsiteSync: boolean;
-  permissionReRank: boolean;
+  permissionTeamOperationLog: boolean;
 };
 
 export type StandSubPlanLevelMapType = Record<

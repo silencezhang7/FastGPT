@@ -1,4 +1,5 @@
-import { SystemModelItemType } from './type';
+import { cloneDeep } from 'lodash';
+import { type SystemModelItemType } from './type';
 
 export const getDefaultLLMModel = () => global?.systemDefaultModel.llm!;
 export const getLLMModel = (model?: string) => {
@@ -53,5 +54,5 @@ export const findAIModel = (model: string): SystemModelItemType | undefined => {
   );
 };
 export const findModelFromAlldata = (model: string) => {
-  return global.systemModelList.find((item) => item.model === model);
+  return cloneDeep(global.systemModelList.find((item) => item.model === model));
 };

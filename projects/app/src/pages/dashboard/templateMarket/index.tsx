@@ -1,3 +1,4 @@
+'use client';
 import { serviceSideProps } from '@/web/common/i18n/utils';
 import DashboardContainer from '@/pageComponents/dashboard/Container';
 import { Box, Button, Flex, Grid, HStack } from '@chakra-ui/react';
@@ -5,9 +6,12 @@ import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
-import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
+import { type ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
-import { AppTemplateSchemaType, TemplateTypeSchemaType } from '@fastgpt/global/core/app/type';
+import {
+  type AppTemplateSchemaType,
+  type TemplateTypeSchemaType
+} from '@fastgpt/global/core/app/type';
 import MyBox from '@fastgpt/web/components/common/MyBox';
 import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 import { getTemplateMarketItemDetail } from '@/web/core/app/api/template';
@@ -84,8 +88,8 @@ const TemplateMarket = ({
       onSuccess(id: string) {
         router.push(`/app/detail?appId=${id}`);
       },
-      successToast: t('common:common.Create Success'),
-      errorToast: t('common:common.Create Failed')
+      successToast: t('common:create_success'),
+      errorToast: t('common:create_failed')
     }
   );
 

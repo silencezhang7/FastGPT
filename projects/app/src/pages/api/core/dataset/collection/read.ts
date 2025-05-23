@@ -5,11 +5,11 @@ import { DatasetCollectionTypeEnum } from '@fastgpt/global/core/dataset/constant
 import { createFileToken } from '@fastgpt/service/support/permission/controller';
 import { BucketNameEnum, ReadFileBaseUrl } from '@fastgpt/global/common/file/constants';
 import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
-import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import { DatasetErrEnum } from '@fastgpt/global/common/error/code/dataset';
 import { authChatCrud, authCollectionInChat } from '@/service/support/permission/auth/chat';
 import { getCollectionWithDataset } from '@fastgpt/service/core/dataset/controller';
-import { useApiDatasetRequest } from '@fastgpt/service/core/dataset/apiDataset/api';
+import { getApiDatasetRequest } from '@fastgpt/service/core/dataset/apiDataset';
 
 export type readCollectionSourceQuery = {};
 
@@ -98,21 +98,15 @@ async function handler(
       const feishuServer = collection.dataset.feishuServer;
       const yuqueServer = collection.dataset.yuqueServer;
 
-      if (apiServer) {
-        return useApiDatasetRequest({ apiServer }).getFilePreviewUrl({
-          apiFileId: collection.apiFileId
-        });
-      }
-
-      if (feishuServer || yuqueServer) {
-        return global.getProApiDatasetFilePreviewUrl({
-          apiFileId: collection.apiFileId,
+      return (
+        await getApiDatasetRequest({
+          apiServer,
           feishuServer,
           yuqueServer
-        });
-      }
-
-      return '';
+        })
+      ).getFilePreviewUrl({
+        apiFileId: collection.apiFileId
+      });
     }
     if (collection.type === DatasetCollectionTypeEnum.externalFile) {
       if (collection.externalFileId && collection.dataset.externalReadUrl) {

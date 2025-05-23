@@ -1,21 +1,20 @@
 import { Box, Flex, Grid, Button, VStack } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { useSystemStore } from '@/web/common/system/useSystemStore';
 import MyIcon from '@fastgpt/web/components/common/Icon';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@fastgpt/web/hooks/useToast';
-import { getErrText } from '@fastgpt/global/common/error/utils';
-import { getWxPayQRCode } from '@/web/support/wallet/bill/api';
+import { postCreatePayBill } from '@/web/support/wallet/bill/api';
 import { BillTypeEnum } from '@fastgpt/global/support/wallet/bill/constants';
 import QRCodePayModal, { type QRPayProps } from '@/components/support/wallet/QRCodePayModal';
 import MyNumberInput from '@fastgpt/web/components/common/Input/NumberInput';
+import { useRequest2 } from '@fastgpt/web/hooks/useRequest';
 
 const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { subPlans } = useSystemStore();
-  const [loading, setLoading] = useState(false);
   const [qrPayData, setQRPayData] = useState<QRPayProps>();
 
   // extra dataset
@@ -26,40 +25,33 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
       month: 1
     }
   });
-  const onclickBuyDatasetSize = useCallback(
+  const { runAsync: onclickBuyDatasetSize, loading: isLoadingBuyDatasetSize } = useRequest2(
     async ({ datasetSize, month }: { datasetSize: number; month: number }) => {
-      try {
-        datasetSize = Math.ceil(datasetSize);
-        month = Math.ceil(month);
+      datasetSize = Math.ceil(datasetSize);
+      month = Math.ceil(month);
 
-        const datasetSizePayAmount = datasetSize * month * extraDatasetPrice;
-        if (datasetSizePayAmount === 0) {
-          return toast({
-            status: 'warning',
-            title: t('common:support.wallet.amount_0')
-          });
-        }
-        setLoading(true);
-
-        const res = await getWxPayQRCode({
-          type: BillTypeEnum.extraDatasetSub,
-          month,
-          extraDatasetSize: datasetSize
-        });
-        setQRPayData({
-          readPrice: res.readPrice,
-          codeUrl: res.codeUrl,
-          billId: res.billId
-        });
-      } catch (err) {
-        toast({
-          title: getErrText(err),
-          status: 'error'
+      const datasetSizePayAmount = datasetSize * month * extraDatasetPrice;
+      if (datasetSizePayAmount === 0) {
+        return toast({
+          status: 'warning',
+          title: t('common:support.wallet.amount_0')
         });
       }
-      setLoading(false);
+
+      const res = await postCreatePayBill({
+        type: BillTypeEnum.extraDatasetSub,
+        month,
+        extraDatasetSize: datasetSize
+      });
+      setQRPayData({
+        tip: t('common:button.extra_dataset_size_tip'),
+        ...res
+      });
     },
-    [extraDatasetPrice, toast]
+    {
+      manual: true,
+      refreshDeps: [extraDatasetPrice]
+    }
   );
 
   // extra ai points
@@ -70,41 +62,34 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
       month: 1
     }
   });
-  const onclickBuyExtraPoints = useCallback(
+  const { runAsync: onclickBuyExtraPoints, loading: isLoadingBuyExtraPoints } = useRequest2(
     async ({ points }: { points: number }) => {
-      try {
-        points = Math.ceil(points);
+      points = Math.ceil(points);
 
-        const month = 1;
-        const payAmount = points * month * extraPointsPrice;
+      const month = 1;
+      const payAmount = points * month * extraPointsPrice;
 
-        if (payAmount === 0) {
-          return toast({
-            status: 'warning',
-            title: t('common:support.wallet.amount_0')
-          });
-        }
-        setLoading(true);
-
-        const res = await getWxPayQRCode({
-          type: BillTypeEnum.extraPoints,
-          extraPoints: points
-        });
-
-        setQRPayData({
-          readPrice: res.readPrice,
-          codeUrl: res.codeUrl,
-          billId: res.billId
-        });
-      } catch (err) {
-        toast({
-          title: getErrText(err),
-          status: 'error'
+      if (payAmount === 0) {
+        return toast({
+          status: 'warning',
+          title: t('common:support.wallet.amount_0')
         });
       }
-      setLoading(false);
+
+      const res = await postCreatePayBill({
+        type: BillTypeEnum.extraPoints,
+        extraPoints: points
+      });
+
+      setQRPayData({
+        tip: t('common:button.extra_points_tip'),
+        ...res
+      });
     },
-    [extraPointsPrice, toast]
+    {
+      manual: true,
+      refreshDeps: [extraPointsPrice]
+    }
   );
 
   return (
@@ -128,7 +113,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
               <Box mt={3} fontSize={['28px', '32px']} fontWeight={'bold'} color={'black'}>
                 {`￥${extraDatasetPrice}/1000` + t('common:core.dataset.data.group')}
                 <Box ml={1} as={'span'} fontSize={'md'} color={'myGray.500'} fontWeight={'normal'}>
-                  /{t('common:common.month')}
+                  /{t('common:month')}
                 </Box>
               </Box>
             </Box>
@@ -158,7 +143,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
                   size={'sm'}
                 />
                 <Box position={'absolute'} right={'30px'} color={'myGray.600'} fontSize={'xs'}>
-                  {t('common:common.month')}
+                  {t('common:month')}
                 </Box>
               </Flex>
             </Flex>
@@ -184,7 +169,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
             mt={6}
             w={'100%'}
             variant={'primaryGhost'}
-            isLoading={loading}
+            isLoading={isLoadingBuyDatasetSize}
             onClick={handleSubmitDatasetSize(onclickBuyDatasetSize)}
             color={'primary.700'}
           >
@@ -210,7 +195,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
               <Box mt={3} fontSize={['28px', '32px']} fontWeight={'bold'} color={'black'}>
                 {`￥${extraPointsPrice}/1000` + t('common:support.wallet.subscription.point')}
                 <Box ml={1} as={'span'} fontSize={'md'} color={'myGray.500'} fontWeight={'normal'}>
-                  /{t('common:common.month')}
+                  /{t('common:month')}
                 </Box>
               </Box>
             </Box>
@@ -233,7 +218,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
               </Box>
               <Flex alignItems={'center'} mt={1} w={'180px'} position={'relative'}>
                 <Box>1</Box>
-                <Box color={'myGray.600'}>{t('common:common.month')}</Box>
+                <Box color={'myGray.600'}>{t('common:month')}</Box>
               </Flex>
             </Flex>
             <Flex mt={4} alignItems={'center'}>
@@ -264,7 +249,7 @@ const ExtraPlan = ({ onPaySuccess }: { onPaySuccess?: () => void }) => {
             mt={6}
             w={'100%'}
             variant={'primaryGhost'}
-            isLoading={loading}
+            isLoading={isLoadingBuyExtraPoints}
             onClick={handleSubmitExtraPoints(onclickBuyExtraPoints)}
             color={'primary.700'}
           >

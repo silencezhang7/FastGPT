@@ -19,32 +19,32 @@ export const DatasetTypeMap = {
   [DatasetTypeEnum.dataset]: {
     icon: 'core/dataset/commonDatasetOutline',
     label: i18nT('dataset:common_dataset'),
-    collectionLabel: i18nT('common:common.File')
+    collectionLabel: i18nT('common:File')
   },
   [DatasetTypeEnum.websiteDataset]: {
     icon: 'core/dataset/websiteDatasetOutline',
     label: i18nT('dataset:website_dataset'),
-    collectionLabel: i18nT('common:common.Website')
+    collectionLabel: i18nT('common:Website')
   },
   [DatasetTypeEnum.externalFile]: {
     icon: 'core/dataset/externalDatasetOutline',
     label: i18nT('dataset:external_file'),
-    collectionLabel: i18nT('common:common.File')
+    collectionLabel: i18nT('common:File')
   },
   [DatasetTypeEnum.apiDataset]: {
     icon: 'core/dataset/externalDatasetOutline',
     label: i18nT('dataset:api_file'),
-    collectionLabel: i18nT('common:common.File')
+    collectionLabel: i18nT('common:File')
   },
   [DatasetTypeEnum.feishu]: {
     icon: 'core/dataset/feishuDatasetOutline',
     label: i18nT('dataset:feishu_dataset'),
-    collectionLabel: i18nT('common:common.File')
+    collectionLabel: i18nT('common:File')
   },
   [DatasetTypeEnum.yuque]: {
     icon: 'core/dataset/yuqueDatasetOutline',
     label: i18nT('dataset:yuque_dataset'),
-    collectionLabel: i18nT('common:common.File')
+    collectionLabel: i18nT('common:File')
   }
 };
 
@@ -120,6 +120,8 @@ export const DatasetCollectionSyncResultMap = {
 export enum DatasetCollectionDataProcessModeEnum {
   chunk = 'chunk',
   qa = 'qa',
+  backup = 'backup',
+
   auto = 'auto' // abandon
 }
 export const DatasetCollectionDataProcessModeMap = {
@@ -131,20 +133,34 @@ export const DatasetCollectionDataProcessModeMap = {
     label: i18nT('common:core.dataset.training.QA mode'),
     tooltip: i18nT('common:core.dataset.import.QA Import Tip')
   },
+  [DatasetCollectionDataProcessModeEnum.backup]: {
+    label: i18nT('dataset:backup_mode'),
+    tooltip: i18nT('dataset:backup_mode')
+  },
   [DatasetCollectionDataProcessModeEnum.auto]: {
     label: i18nT('common:core.dataset.training.Auto mode'),
     tooltip: i18nT('common:core.dataset.training.Auto mode Tip')
   }
 };
 
+export enum ChunkTriggerConfigTypeEnum {
+  minSize = 'minSize',
+  forceChunk = 'forceChunk',
+  maxSize = 'maxSize'
+}
 export enum ChunkSettingModeEnum {
   auto = 'auto',
   custom = 'custom'
 }
 
 export enum DataChunkSplitModeEnum {
+  paragraph = 'paragraph',
   size = 'size',
   char = 'char'
+}
+export enum ParagraphChunkAIModeEnum {
+  auto = 'auto',
+  force = 'force'
 }
 
 /* ------------ data -------------- */
@@ -154,7 +170,6 @@ export enum ImportDataSourceEnum {
   fileLocal = 'fileLocal',
   fileLink = 'fileLink',
   fileCustom = 'fileCustom',
-  csvTable = 'csvTable',
   externalFile = 'externalFile',
   apiDataset = 'apiDataset',
   reTraining = 'reTraining'

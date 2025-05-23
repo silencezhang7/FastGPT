@@ -1,9 +1,15 @@
-import { DispatchNodeResponseType } from '../workflow/runtime/type';
+import { type DispatchNodeResponseType } from '../workflow/runtime/type';
 import { FlowNodeTypeEnum } from '../workflow/node/constant';
 import { ChatItemValueTypeEnum, ChatRoleEnum, ChatSourceEnum } from './constants';
-import { ChatHistoryItemResType, ChatItemType, UserChatItemValueItemType } from './type.d';
+import {
+  type AIChatItemValueItemType,
+  type ChatHistoryItemResType,
+  type ChatItemType,
+  type UserChatItemValueItemType
+} from './type.d';
 import { sliceStrStartEnd } from '../../common/string/tools';
 import { PublishChannelEnum } from '../../support/outLink/constant';
+import { removeDatasetCiteText } from '../../../service/core/ai/utils';
 
 // Concat 2 -> 1, and sort by role
 export const concatHistories = (histories1: ChatItemType[], histories2: ChatItemType[]) => {
@@ -77,13 +83,7 @@ export const getHistoryPreview = (
   });
 };
 
-export const filterModuleTypeList: any[] = [
-  FlowNodeTypeEnum.pluginModule,
-  FlowNodeTypeEnum.datasetSearchNode,
-  FlowNodeTypeEnum.tools,
-  FlowNodeTypeEnum.pluginOutput
-];
-
+// Filter workflow public response
 export const filterPublicNodeResponseData = ({
   flowResponses = [],
   responseDetail = false
@@ -91,12 +91,19 @@ export const filterPublicNodeResponseData = ({
   flowResponses?: ChatHistoryItemResType[];
   responseDetail?: boolean;
 }) => {
+  const publicNodeMap: Record<string, any> = {
+    [FlowNodeTypeEnum.pluginModule]: true,
+    [FlowNodeTypeEnum.datasetSearchNode]: true,
+    [FlowNodeTypeEnum.tools]: true,
+    [FlowNodeTypeEnum.pluginOutput]: true
+  };
+
   const filedList = responseDetail
     ? ['quoteList', 'moduleType', 'pluginOutput', 'runningTime']
     : ['moduleType', 'pluginOutput', 'runningTime'];
 
   return flowResponses
-    .filter((item) => filterModuleTypeList.includes(item.moduleType))
+    .filter((item) => publicNodeMap[item.moduleType])
     .map((item) => {
       const obj: DispatchNodeResponseType = {};
       for (let key in item) {
@@ -110,6 +117,40 @@ export const filterPublicNodeResponseData = ({
       }
       return obj as ChatHistoryItemResType;
     });
+};
+
+// Remove dataset cite in ai response
+export const removeAIResponseCite = <T extends AIChatItemValueItemType[] | string>(
+  value: T,
+  retainCite: boolean
+): T => {
+  if (retainCite) return value;
+
+  if (typeof value === 'string') {
+    return removeDatasetCiteText(value, false) as T;
+  }
+
+  return value.map<AIChatItemValueItemType>((item) => {
+    if (item.text?.content) {
+      return {
+        ...item,
+        text: {
+          ...item.text,
+          content: removeDatasetCiteText(item.text.content, false)
+        }
+      };
+    }
+    if (item.reasoning?.content) {
+      return {
+        ...item,
+        reasoning: {
+          ...item.reasoning,
+          content: removeDatasetCiteText(item.reasoning.content, false)
+        }
+      };
+    }
+    return item;
+  }) as T;
 };
 
 export const removeEmptyUserInput = (input?: UserChatItemValueItemType[]) => {
@@ -185,7 +226,6 @@ export const mergeChatResponseData = (
           runningTime: +((lastResponse.runningTime || 0) + (curr.runningTime || 0)).toFixed(2),
           totalPoints: (lastResponse.totalPoints || 0) + (curr.totalPoints || 0),
           childTotalPoints: (lastResponse.childTotalPoints || 0) + (curr.childTotalPoints || 0),
-          toolCallTokens: (lastResponse.toolCallTokens || 0) + (curr.toolCallTokens || 0),
           toolDetail: [...(lastResponse.toolDetail || []), ...(curr.toolDetail || [])],
           loopDetail: [...(lastResponse.loopDetail || []), ...(curr.loopDetail || [])],
           pluginDetail: [...(lastResponse.pluginDetail || []), ...(curr.pluginDetail || [])]

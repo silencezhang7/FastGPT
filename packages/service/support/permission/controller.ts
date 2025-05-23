@@ -1,24 +1,26 @@
 import Cookie from 'cookie';
 import { ERROR_ENUM } from '@fastgpt/global/common/error/errorCode';
 import jwt from 'jsonwebtoken';
-import { NextApiResponse } from 'next';
+import { type NextApiResponse } from 'next';
 import type { AuthModeType, ReqHeaderAuthType } from './type.d';
-import { AuthUserTypeEnum, PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant';
+import type { PerResourceTypeEnum } from '@fastgpt/global/support/permission/constant';
+import { AuthUserTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { authOpenApiKey } from '../openapi/auth';
-import { FileTokenQuery } from '@fastgpt/global/common/file/type';
+import { type FileTokenQuery } from '@fastgpt/global/common/file/type';
 import { MongoResourcePermission } from './schema';
-import { ClientSession } from 'mongoose';
-import { PermissionValueType } from '@fastgpt/global/support/permission/type';
+import { type ClientSession } from 'mongoose';
+import { type PermissionValueType } from '@fastgpt/global/support/permission/type';
 import { bucketNameMap } from '@fastgpt/global/common/file/constants';
 import { addMinutes } from 'date-fns';
 import { getGroupsByTmbId } from './memberGroup/controllers';
 import { Permission } from '@fastgpt/global/support/permission/controller';
-import { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
+import { type ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { CommonErrEnum } from '@fastgpt/global/common/error/code/common';
-import { MemberGroupSchemaType } from '@fastgpt/global/support/permission/memberGroup/type';
-import { TeamMemberSchema } from '@fastgpt/global/support/user/team/type';
-import { OrgSchemaType } from '@fastgpt/global/support/user/team/org/type';
+import { type MemberGroupSchemaType } from '@fastgpt/global/support/permission/memberGroup/type';
+import { type TeamMemberSchema } from '@fastgpt/global/support/user/team/type';
+import { type OrgSchemaType } from '@fastgpt/global/support/user/team/org/type';
 import { getOrgIdSetWithParentByTmbId } from './org/controllers';
+import { authUserSession } from '../user/session';
 
 /** get resource permission for a team member
  * If there is no permission for the team member, it will return undefined
@@ -212,51 +214,6 @@ export const delResourcePermission = ({
 };
 
 /* 下面代码等迁移 */
-/* create token */
-export function createJWT(user: {
-  _id?: string;
-  team?: { teamId?: string; tmbId: string };
-  isRoot?: boolean;
-}) {
-  const key = process.env.TOKEN_KEY as string;
-  const token = jwt.sign(
-    {
-      userId: String(user._id),
-      teamId: String(user.team?.teamId),
-      tmbId: String(user.team?.tmbId),
-      isRoot: user.isRoot,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7
-    },
-    key
-  );
-  return token;
-}
-
-// auth token
-export function authJWT(token: string) {
-  return new Promise<{
-    userId: string;
-    teamId: string;
-    tmbId: string;
-    isRoot: boolean;
-  }>((resolve, reject) => {
-    const key = process.env.TOKEN_KEY as string;
-
-    jwt.verify(token, key, (err, decoded: any) => {
-      if (err || !decoded?.userId) {
-        reject(ERROR_ENUM.unAuthorization);
-        return;
-      }
-
-      resolve({
-        userId: decoded.userId,
-        teamId: decoded.teamId || '',
-        tmbId: decoded.tmbId,
-        isRoot: decoded.isRoot
-      });
-    });
-  });
-}
 
 export async function parseHeaderCert({
   req,
@@ -274,7 +231,7 @@ export async function parseHeaderCert({
       return Promise.reject(ERROR_ENUM.unAuthorization);
     }
 
-    return await authJWT(cookieToken);
+    return authUserSession(cookieToken);
   }
   // from authorization get apikey
   async function parseAuthorization(authorization?: string) {
@@ -344,6 +301,7 @@ export async function parseHeaderCert({
       if (authToken && (token || cookie)) {
         // user token(from fastgpt web)
         const res = await authCookieToken(cookie, token);
+
         return {
           uid: res.userId,
           teamId: res.teamId,

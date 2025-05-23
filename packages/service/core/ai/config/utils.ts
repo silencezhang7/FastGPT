@@ -1,20 +1,20 @@
 import path from 'path';
 import * as fs from 'fs';
-import { SystemModelItemType } from '../type';
+import { type SystemModelItemType } from '../type';
 import { ModelTypeEnum } from '@fastgpt/global/core/ai/model';
 import { MongoSystemModel } from './schema';
 import {
-  LLMModelItemType,
-  EmbeddingModelItemType,
-  TTSModelType,
-  STTModelType,
-  RerankModelItemType
+  type LLMModelItemType,
+  type EmbeddingModelItemType,
+  type TTSModelType,
+  type STTModelType,
+  type RerankModelItemType
 } from '@fastgpt/global/core/ai/model.d';
 import { debounce } from 'lodash';
 import {
   getModelProvider,
-  ModelProviderIdType,
-  ModelProviderType
+  type ModelProviderIdType,
+  type ModelProviderType
 } from '@fastgpt/global/core/ai/provider';
 import { findModelFromAlldata } from '../model';
 import {
@@ -23,64 +23,65 @@ import {
 } from '../../../common/system/config/controller';
 import { delay } from '@fastgpt/global/common/system/utils';
 
+const getModelConfigBaseUrl = () => {
+  const currentFileUrl = new URL(import.meta.url);
+  const filePath = decodeURIComponent(
+    process.platform === 'win32'
+      ? currentFileUrl.pathname.substring(1) // Remove leading slash on Windows
+      : currentFileUrl.pathname
+  );
+  const modelsPath = path.join(path.dirname(filePath), 'provider');
+  return modelsPath;
+};
+
 /* 
   TODO: 分优先级读取：
   1. 有外部挂载目录，则读取外部的
   2. 没有外部挂载目录，则读取本地的。然后试图拉取云端的进行覆盖。
 */
 export const loadSystemModels = async (init = false) => {
-  const getProviderList = () => {
-    const currentFileUrl = new URL(import.meta.url);
-    const filePath = decodeURIComponent(
-      process.platform === 'win32'
-        ? currentFileUrl.pathname.substring(1) // Remove leading slash on Windows
-        : currentFileUrl.pathname
-    );
-    const modelsPath = path.join(path.dirname(filePath), 'provider');
-
-    return fs.readdirSync(modelsPath) as string[];
-  };
   const pushModel = (model: SystemModelItemType) => {
     global.systemModelList.push(model);
 
     if (model.isActive) {
       global.systemActiveModelList.push(model);
-    }
-    if (model.type === ModelTypeEnum.llm) {
-      global.llmModelMap.set(model.model, model);
-      global.llmModelMap.set(model.name, model);
-      if (model.isDefault) {
-        global.systemDefaultModel.llm = model;
-      }
-      if (model.isDefaultDatasetTextModel) {
-        global.systemDefaultModel.datasetTextLLM = model;
-      }
-      if (model.isDefaultDatasetImageModel) {
-        global.systemDefaultModel.datasetImageLLM = model;
-      }
-    } else if (model.type === ModelTypeEnum.embedding) {
-      global.embeddingModelMap.set(model.model, model);
-      global.embeddingModelMap.set(model.name, model);
-      if (model.isDefault) {
-        global.systemDefaultModel.embedding = model;
-      }
-    } else if (model.type === ModelTypeEnum.tts) {
-      global.ttsModelMap.set(model.model, model);
-      global.ttsModelMap.set(model.name, model);
-      if (model.isDefault) {
-        global.systemDefaultModel.tts = model;
-      }
-    } else if (model.type === ModelTypeEnum.stt) {
-      global.sttModelMap.set(model.model, model);
-      global.sttModelMap.set(model.name, model);
-      if (model.isDefault) {
-        global.systemDefaultModel.stt = model;
-      }
-    } else if (model.type === ModelTypeEnum.rerank) {
-      global.reRankModelMap.set(model.model, model);
-      global.reRankModelMap.set(model.name, model);
-      if (model.isDefault) {
-        global.systemDefaultModel.rerank = model;
+
+      if (model.type === ModelTypeEnum.llm) {
+        global.llmModelMap.set(model.model, model);
+        global.llmModelMap.set(model.name, model);
+        if (model.isDefault) {
+          global.systemDefaultModel.llm = model;
+        }
+        if (model.isDefaultDatasetTextModel) {
+          global.systemDefaultModel.datasetTextLLM = model;
+        }
+        if (model.isDefaultDatasetImageModel) {
+          global.systemDefaultModel.datasetImageLLM = model;
+        }
+      } else if (model.type === ModelTypeEnum.embedding) {
+        global.embeddingModelMap.set(model.model, model);
+        global.embeddingModelMap.set(model.name, model);
+        if (model.isDefault) {
+          global.systemDefaultModel.embedding = model;
+        }
+      } else if (model.type === ModelTypeEnum.tts) {
+        global.ttsModelMap.set(model.model, model);
+        global.ttsModelMap.set(model.name, model);
+        if (model.isDefault) {
+          global.systemDefaultModel.tts = model;
+        }
+      } else if (model.type === ModelTypeEnum.stt) {
+        global.sttModelMap.set(model.model, model);
+        global.sttModelMap.set(model.name, model);
+        if (model.isDefault) {
+          global.systemDefaultModel.stt = model;
+        }
+      } else if (model.type === ModelTypeEnum.rerank) {
+        global.reRankModelMap.set(model.model, model);
+        global.reRankModelMap.set(model.name, model);
+        if (model.isDefault) {
+          global.systemDefaultModel.rerank = model;
+        }
       }
     }
   };
@@ -99,14 +100,21 @@ export const loadSystemModels = async (init = false) => {
 
   try {
     const dbModels = await MongoSystemModel.find({}).lean();
-    const providerList = getProviderList();
 
-    // System model
+    // Load system model from local
+    const modelsPath = getModelConfigBaseUrl();
+    const providerList = fs.readdirSync(modelsPath) as string[];
     await Promise.all(
       providerList.map(async (name) => {
         const fileContent = (await import(`./provider/${name}`))?.default as {
           provider: ModelProviderIdType;
           list: SystemModelItemType[];
+        };
+        const mergeObject = (obj1: any, obj2: any) => {
+          if (!obj1 && !obj2) return undefined;
+          const formatObj1 = typeof obj1 === 'object' ? obj1 : {};
+          const formatObj2 = typeof obj2 === 'object' ? obj2 : {};
+          return { ...formatObj1, ...formatObj2 };
         };
 
         fileContent.list.forEach((fileModel) => {
@@ -115,6 +123,10 @@ export const loadSystemModels = async (init = false) => {
           const modelData: any = {
             ...fileModel,
             ...dbModel?.metadata,
+            // @ts-ignore
+            defaultConfig: mergeObject(fileModel.defaultConfig, dbModel?.metadata?.defaultConfig),
+            // @ts-ignore
+            fieldMap: mergeObject(fileModel.fieldMap, dbModel?.metadata?.fieldMap),
             provider: getModelProvider(dbModel?.metadata?.provider || fileContent.provider).id,
             type: dbModel?.metadata?.type || fileModel.type,
             isCustom: false

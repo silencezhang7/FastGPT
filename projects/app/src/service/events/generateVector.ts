@@ -9,11 +9,11 @@ import { MongoDatasetData } from '@fastgpt/service/core/dataset/data/schema';
 import {
   deleteDatasetDataVector,
   insertDatasetDataVector
-} from '@fastgpt/service/common/vectorStore/controller';
+} from '@fastgpt/service/common/vectorDB/controller';
 import { getEmbeddingModel } from '@fastgpt/service/core/ai/model';
 import { mongoSessionRun } from '@fastgpt/service/common/mongo/sessionRun';
-import { DatasetTrainingSchemaType } from '@fastgpt/global/core/dataset/type';
-import { Document } from '@fastgpt/service/common/mongo';
+import { type DatasetTrainingSchemaType } from '@fastgpt/global/core/dataset/type';
+import type { Document } from '@fastgpt/service/common/mongo';
 import { getErrText } from '@fastgpt/global/common/error/utils';
 
 const reduceQueue = () => {
@@ -262,6 +262,7 @@ const insertData = async ({
       q: trainingData.q,
       a: trainingData.a,
       chunkIndex: trainingData.chunkIndex,
+      indexSize: trainingData.indexSize,
       indexes: trainingData.indexes,
       embeddingModel: trainingData.model,
       session

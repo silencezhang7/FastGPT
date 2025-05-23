@@ -1,5 +1,5 @@
 import OpenAI from '@fastgpt/global/core/ai';
-import {
+import type {
   ChatCompletionCreateParamsNonStreaming,
   ChatCompletionCreateParamsStreaming,
   StreamChatType,
@@ -8,9 +8,9 @@ import {
 import { getErrText } from '@fastgpt/global/common/error/utils';
 import { addLog } from '../../common/system/log';
 import { i18nT } from '../../../web/i18n/utils';
-import { OpenaiAccountType } from '@fastgpt/global/support/user/team/type';
+import { type OpenaiAccountType } from '@fastgpt/global/support/user/team/type';
 import { getLLMModel } from './model';
-import { LLMModelItemType } from '@fastgpt/global/core/ai/model.d';
+import { type LLMModelItemType } from '@fastgpt/global/core/ai/model.d';
 
 const aiProxyBaseUrl = process.env.AIPROXY_API_ENDPOINT
   ? `${process.env.AIPROXY_API_ENDPOINT}/v1`
@@ -45,11 +45,13 @@ export const getAxiosConfig = (props?: { userKey?: OpenaiAccountType }) => {
 };
 
 export const createChatCompletion = async ({
+  modelData,
   body,
   userKey,
   timeout,
   options
 }: {
+  modelData?: LLMModelItemType;
   body: ChatCompletionCreateParamsNonStreaming | ChatCompletionCreateParamsStreaming;
   userKey?: OpenaiAccountType;
   timeout?: number;
@@ -70,12 +72,13 @@ export const createChatCompletion = async ({
 > => {
   try {
     // Rewrite model
-    const modelConstantsData = getLLMModel(body.model);
+    const modelConstantsData = modelData || getLLMModel(body.model);
     if (!modelConstantsData) {
       return Promise.reject(`${body.model} not found`);
     }
+    body.model = modelConstantsData.model;
 
-    const formatTimeout = timeout ? timeout : body.stream ? 60000 : 600000;
+    const formatTimeout = timeout ? timeout : 600000;
     const ai = getAIApi({
       userKey,
       timeout: formatTimeout

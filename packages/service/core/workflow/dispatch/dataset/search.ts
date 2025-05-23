@@ -1,6 +1,6 @@
 import {
-  DispatchNodeResponseType,
-  DispatchNodeResultType
+  type DispatchNodeResponseType,
+  type DispatchNodeResultType
 } from '@fastgpt/global/core/workflow/runtime/type.d';
 import { formatModelChars2Points } from '../../../../support/wallet/usage/utils';
 import type { SelectedDatasetType } from '@fastgpt/global/core/workflow/api.d';
@@ -8,16 +8,16 @@ import type { SearchDataResponseItemType } from '@fastgpt/global/core/dataset/ty
 import type { ModuleDispatchProps } from '@fastgpt/global/core/workflow/runtime/type';
 import { getEmbeddingModel, getRerankModel } from '../../../ai/model';
 import { deepRagSearch, defaultSearchDatasetData } from '../../../dataset/search/controller';
-import { NodeInputKeyEnum, NodeOutputKeyEnum } from '@fastgpt/global/core/workflow/constants';
+import type { NodeInputKeyEnum, NodeOutputKeyEnum } from '@fastgpt/global/core/workflow/constants';
 import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 import { DatasetSearchModeEnum } from '@fastgpt/global/core/dataset/constants';
-import { ChatNodeUsageType } from '@fastgpt/global/support/wallet/bill/type';
-import { checkTeamReRankPermission } from '../../../../support/permission/teamLimit';
+import { type ChatNodeUsageType } from '@fastgpt/global/support/wallet/bill/type';
 import { MongoDataset } from '../../../dataset/schema';
 import { i18nT } from '../../../../../web/i18n/utils';
 import { filterDatasetsByTmbId } from '../../../dataset/utils';
 import { ModelTypeEnum } from '@fastgpt/global/core/ai/model';
 import { addEndpointToImageUrl } from '../../../../common/file/image/utils';
+import { getDatasetSearchToolResponsePrompt } from '../../../../../global/core/ai/prompt/dataset';
 
 type DatasetSearchProps = ModuleDispatchProps<{
   [NodeInputKeyEnum.datasetSelectList]: SelectedDatasetType;
@@ -58,7 +58,7 @@ export async function dispatchDatasetSearch(
     params: {
       datasets = [],
       similarity,
-      limit = 1500,
+      limit = 5000,
       userChatInput = '',
       authTmbId = false,
       collectionFilterMatch,
@@ -113,12 +113,13 @@ export async function dispatchDatasetSearch(
   if (datasetIds.length === 0) {
     return emptyResult;
   }
-  // console.log(concatQueries, rewriteQuery, aiExtensionResult);
 
   // get vector
   const vectorModel = getEmbeddingModel(
     (await MongoDataset.findById(datasets[0].datasetId, 'vectorModel').lean())?.vectorModel
   );
+  // Get Rerank Model
+  const rerankModelData = getRerankModel(rerankModel);
 
   // start search
   const searchData = {
@@ -132,14 +133,15 @@ export async function dispatchDatasetSearch(
     datasetIds,
     searchMode,
     embeddingWeight,
-    usingReRank: usingReRank && (await checkTeamReRankPermission(teamId)),
-    rerankModel: getRerankModel(rerankModel),
+    usingReRank,
+    rerankModel: rerankModelData,
     rerankWeight,
     collectionFilterMatch
   };
   const {
     searchRes,
-    tokens,
+    embeddingTokens,
+    reRankInputTokens,
     usingSimilarityFilter,
     usingReRank: searchUsingReRank,
     queryExtensionResult,
@@ -164,17 +166,31 @@ export async function dispatchDatasetSearch(
   const { totalPoints: embeddingTotalPoints, modelName: embeddingModelName } =
     formatModelChars2Points({
       model: vectorModel.model,
-      inputTokens: tokens,
+      inputTokens: embeddingTokens,
       modelType: ModelTypeEnum.embedding
     });
   nodeDispatchUsages.push({
     totalPoints: embeddingTotalPoints,
     moduleName: node.name,
     model: embeddingModelName,
-    inputTokens: tokens
+    inputTokens: embeddingTokens
   });
+  // Rerank
+  const { totalPoints: reRankTotalPoints, modelName: reRankModelName } = formatModelChars2Points({
+    model: rerankModelData?.model,
+    inputTokens: reRankInputTokens,
+    modelType: ModelTypeEnum.rerank
+  });
+  if (usingReRank) {
+    nodeDispatchUsages.push({
+      totalPoints: reRankTotalPoints,
+      moduleName: node.name,
+      model: reRankModelName,
+      inputTokens: reRankInputTokens
+    });
+  }
   // Query extension
-  const { totalPoints: queryExtensionTotalPoints } = (() => {
+  (() => {
     if (queryExtensionResult) {
       const { totalPoints, modelName } = formatModelChars2Points({
         model: queryExtensionResult.model,
@@ -198,7 +214,7 @@ export async function dispatchDatasetSearch(
     };
   })();
   // Deep search
-  const { totalPoints: deepSearchTotalPoints } = (() => {
+  (() => {
     if (deepSearchResult) {
       const { totalPoints, modelName } = formatModelChars2Points({
         model: deepSearchResult.model,
@@ -221,20 +237,26 @@ export async function dispatchDatasetSearch(
       totalPoints: 0
     };
   })();
-  const totalPoints = embeddingTotalPoints + queryExtensionTotalPoints + deepSearchTotalPoints;
+
+  const totalPoints = nodeDispatchUsages.reduce((acc, item) => acc + item.totalPoints, 0);
 
   const responseData: DispatchNodeResponseType & { totalPoints: number } = {
     totalPoints,
     query: userChatInput,
-    model: vectorModel.model,
-    inputTokens: tokens,
+    embeddingModel: vectorModel.name,
+    embeddingTokens,
     similarity: usingSimilarityFilter ? similarity : undefined,
     limit,
     searchMode,
     embeddingWeight: searchMode === DatasetSearchModeEnum.mixedRecall ? embeddingWeight : undefined,
-    rerankModel: usingReRank ? getRerankModel(rerankModel)?.name : undefined,
-    rerankWeight: usingReRank ? rerankWeight : undefined,
-    searchUsingReRank: searchUsingReRank,
+    // Rerank
+    ...(searchUsingReRank && {
+      rerankModel: rerankModelData?.name,
+      rerankWeight: rerankWeight,
+      reRankInputTokens
+    }),
+    searchUsingReRank,
+    // Results
     quoteList: searchRes,
     queryExtensionResult,
     deepSearchResult
@@ -244,10 +266,14 @@ export async function dispatchDatasetSearch(
     quoteQA: searchRes,
     [DispatchNodeResponseKeyEnum.nodeResponse]: responseData,
     nodeDispatchUsages,
-    [DispatchNodeResponseKeyEnum.toolResponses]: searchRes.map((item) => ({
-      sourceName: item.sourceName,
-      updateTime: item.updateTime,
-      content: addEndpointToImageUrl(`${item.q}\n${item.a}`.trim())
-    }))
+    [DispatchNodeResponseKeyEnum.toolResponses]: {
+      prompt: getDatasetSearchToolResponsePrompt(),
+      cites: searchRes.map((item) => ({
+        id: item.id,
+        sourceName: item.sourceName,
+        updateTime: item.updateTime,
+        content: addEndpointToImageUrl(`${item.q}\n${item.a}`.trim())
+      }))
+    }
   };
 }

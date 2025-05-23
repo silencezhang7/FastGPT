@@ -1,9 +1,10 @@
+'use client';
 import React from 'react';
 import {
   Grid,
   Box,
   Flex,
-  BoxProps,
+  type BoxProps,
   useTheme,
   Button,
   Table,

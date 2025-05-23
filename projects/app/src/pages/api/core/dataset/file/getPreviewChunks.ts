@@ -1,12 +1,12 @@
 import {
-  ChunkSettingModeEnum,
-  DataChunkSplitModeEnum,
-  DatasetCollectionDataProcessModeEnum,
-  DatasetSourceReadTypeEnum
+  type ChunkSettingModeEnum,
+  type DataChunkSplitModeEnum,
+  type DatasetCollectionDataProcessModeEnum
 } from '@fastgpt/global/core/dataset/constants';
+import { DatasetSourceReadTypeEnum } from '@fastgpt/global/core/dataset/constants';
 import { rawText2Chunks, readDatasetSourceRawText } from '@fastgpt/service/core/dataset/read';
 import { NextAPI } from '@/service/middleware/entry';
-import { ApiRequestProps } from '@fastgpt/service/type/next';
+import { type ApiRequestProps } from '@fastgpt/service/type/next';
 import {
   OwnerPermissionVal,
   WritePermissionVal
@@ -39,7 +39,6 @@ export type PostPreviewFilesChunksProps = {
 
   // Read params
   selector?: string;
-  isQAImport?: boolean;
   externalFileId?: string;
 };
 export type PreviewChunksResponse = {
@@ -66,7 +65,6 @@ async function handler(
 
     overlapRatio,
     selector,
-    isQAImport,
     datasetId,
     externalFileId
   } = req.body;
@@ -118,7 +116,6 @@ async function handler(
     type,
     sourceId,
     selector,
-    isQAImport,
     apiServer: dataset.apiServer,
     feishuServer: dataset.feishuServer,
     yuqueServer: dataset.yuqueServer,
@@ -131,9 +128,9 @@ async function handler(
     chunkSize,
     maxSize: getLLMMaxChunkSize(getLLMModel(dataset.agentModel)),
     overlapRatio,
-    customReg: chunkSplitter ? [chunkSplitter] : [],
-    isQAImport: isQAImport
+    customReg: chunkSplitter ? [chunkSplitter] : []
   });
+
   return {
     chunks: chunks.slice(0, 10),
     total: chunks.length

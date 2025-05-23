@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { NodeProps } from 'reactflow';
+import { type NodeProps } from 'reactflow';
 import NodeCard from './render/NodeCard';
-import { FlowNodeItemType } from '@fastgpt/global/core/workflow/type/node.d';
+import { type FlowNodeItemType } from '@fastgpt/global/core/workflow/type/node.d';
 import Container from '../components/Container';
 import RenderInput from './render/RenderInput';
 import { NodeInputKeyEnum } from '@fastgpt/global/core/workflow/constants';
 import { useTranslation } from 'next-i18next';
-import { FlowNodeInputItemType } from '@fastgpt/global/core/workflow/type/io.d';
+import { type FlowNodeInputItemType } from '@fastgpt/global/core/workflow/type/io.d';
 import { useContextSelector } from 'use-context-selector';
 import { WorkflowContext } from '../../context';
 import IOTitle from '../components/IOTitle';
@@ -23,6 +23,7 @@ import {
   SNADBOX_CODE_TEMPLATE
 } from '@fastgpt/global/core/workflow/template/system/sandbox/constants';
 import MySelect from '@fastgpt/web/components/common/MySelect';
+import PopoverConfirm from '@fastgpt/web/components/common/MyPopover/PopoverConfirm';
 
 const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
   const { t } = useTranslation();
@@ -34,11 +35,6 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
 
   const splitToolInputs = useContextSelector(WorkflowContext, (ctx) => ctx.splitToolInputs);
   const onChangeNode = useContextSelector(WorkflowContext, (ctx) => ctx.onChangeNode);
-
-  // 重置模板确认
-  const { ConfirmModal: ResetTemplateConfirm, openConfirm: openResetTemplateConfirm } = useConfirm({
-    content: t('workflow:code.Reset template confirm')
-  });
 
   // 切换语言确认
   const { ConfirmModal: SwitchLangConfirm, openConfirm: openSwitchLangConfirm } = useConfirm({
@@ -84,13 +80,16 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
               {codeType.value === 'py' && (
                 <QuestionTip ml={2} label={t('workflow:support_code_language')} />
               )}
-              <Box
-                cursor={'pointer'}
-                color={'primary.500'}
-                fontSize={'xs'}
-                ml="auto"
-                mr={2}
-                onClick={openResetTemplateConfirm(() => {
+              <PopoverConfirm
+                Trigger={
+                  <Box cursor={'pointer'} color={'primary.500'} fontSize={'xs'} ml="auto" mr={2}>
+                    {t('workflow:code.Reset template')}
+                  </Box>
+                }
+                showCancel
+                content={t('workflow:code.Reset template confirm')}
+                placement={'top-end'}
+                onConfirm={() =>
                   onChangeNode({
                     nodeId,
                     type: 'updateInput',
@@ -99,11 +98,9 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
                       ...item,
                       value: codeType.value === 'js' ? JS_TEMPLATE : PY_TEMPLATE
                     }
-                  });
-                })}
-              >
-                {t('workflow:code.Reset template')}
-              </Box>
+                  })
+                }
+              />
             </Flex>
             <CodeEditor
               bg={'white'}
@@ -123,7 +120,7 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
         );
       }
     };
-  }, [codeType, nodeId, onChangeNode, openResetTemplateConfirm, openSwitchLangConfirm, t]);
+  }, [codeType, nodeId, onChangeNode, openSwitchLangConfirm, t]);
 
   const { isTool, commonInputs } = splitToolInputs(inputs, nodeId);
 
@@ -135,7 +132,7 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
         </Container>
       )}
       <Container>
-        <IOTitle text={t('common:common.Input')} mb={-1} />
+        <IOTitle text={t('common:Input')} mb={-1} />
         <RenderInput
           nodeId={nodeId}
           flowInputList={commonInputs}
@@ -143,10 +140,9 @@ const NodeCode = ({ data, selected }: NodeProps<FlowNodeItemType>) => {
         />
       </Container>
       <Container>
-        <IOTitle text={t('common:common.Output')} />
+        <IOTitle text={t('common:Output')} />
         <RenderOutput nodeId={nodeId} flowOutputList={outputs} />
       </Container>
-      <ResetTemplateConfirm />
       <SwitchLangConfirm />
     </NodeCard>
   );

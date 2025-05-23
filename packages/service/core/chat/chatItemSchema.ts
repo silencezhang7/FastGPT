@@ -1,6 +1,6 @@
 import { connectionMongo, getMongoModel, type Model } from '../../common/mongo';
 const { Schema, model, models } = connectionMongo;
-import { ChatItemSchema as ChatItemType } from '@fastgpt/global/core/chat/type';
+import { type ChatItemSchema as ChatItemType } from '@fastgpt/global/core/chat/type';
 import { ChatRoleMap } from '@fastgpt/global/core/chat/constants';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 import {
@@ -61,6 +61,7 @@ const ChatItemSchema = new Schema({
     type: Array,
     default: []
   },
+  errorMsg: String,
   userGoodFeedback: {
     type: String
   },
@@ -82,7 +83,8 @@ const ChatItemSchema = new Schema({
   [DispatchNodeResponseKeyEnum.nodeResponse]: {
     type: Array,
     default: []
-  }
+  },
+  durationSeconds: Number
 });
 
 try {
@@ -94,8 +96,6 @@ try {
      close custom feedback; 
   */
   ChatItemSchema.index({ appId: 1, chatId: 1, dataId: 1 });
-  // admin charts
-  ChatItemSchema.index({ time: -1, obj: 1 });
   // timer, clear history
   ChatItemSchema.index({ teamId: 1, time: -1 });
 

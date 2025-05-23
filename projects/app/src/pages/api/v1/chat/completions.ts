@@ -30,18 +30,19 @@ import {
   concatHistories,
   filterPublicNodeResponseData,
   getChatTitleFromChatMessage,
+  removeAIResponseCite,
   removeEmptyUserInput
 } from '@fastgpt/global/core/chat/utils';
 import { updateApiKeyUsage } from '@fastgpt/service/support/openapi/tools';
 import { getUserChatInfoAndAuthTeamPoints } from '@fastgpt/service/support/permission/auth/team';
 import { AuthUserTypeEnum } from '@fastgpt/global/support/permission/constant';
 import { MongoApp } from '@fastgpt/service/core/app/schema';
-import { AppSchema } from '@fastgpt/global/core/app/type';
-import { AuthOutLinkChatProps } from '@fastgpt/global/support/outLink/api';
+import { type AppSchema } from '@fastgpt/global/core/app/type';
+import { type AuthOutLinkChatProps } from '@fastgpt/global/support/outLink/api';
 import { MongoChat } from '@fastgpt/service/core/chat/chatSchema';
 import { ChatErrEnum } from '@fastgpt/global/common/error/code/chat';
-import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
-import { AIChatItemType, UserChatItemType } from '@fastgpt/global/core/chat/type';
+import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+import { type AIChatItemType, type UserChatItemType } from '@fastgpt/global/core/chat/type';
 import { DispatchNodeResponseKeyEnum } from '@fastgpt/global/core/workflow/runtime/constants';
 
 import { NextAPI } from '@/service/middleware/entry';
@@ -58,7 +59,7 @@ import { rewriteNodeOutputByHistories } from '@fastgpt/global/core/workflow/runt
 import { getWorkflowResponseWrite } from '@fastgpt/service/core/workflow/dispatch/utils';
 import { WORKFLOW_MAX_RUN_TIMES } from '@fastgpt/service/core/workflow/constants';
 import { getPluginInputsFromStoreNodes } from '@fastgpt/global/core/app/plugin/utils';
-import { ExternalProviderType } from '@fastgpt/global/core/workflow/runtime/type';
+import { type ExternalProviderType } from '@fastgpt/global/core/workflow/runtime/type';
 
 type FastGptWebChatProps = {
   chatId?: string; // undefined: get histories from messages, '': new chat, 'xxxxx': get histories from db
@@ -74,6 +75,7 @@ export type Props = ChatCompletionCreateParams &
     responseChatItemId?: string;
     stream?: boolean;
     detail?: boolean;
+    retainDatasetCite?: boolean;
     variables: Record<string, any>; // Global variables or plugin inputs
   };
 
@@ -93,14 +95,6 @@ type AuthResponseType = {
 };
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.on('close', () => {
-    res.end();
-  });
-  res.on('error', () => {
-    console.log('error: ', 'request error');
-    res.end();
-  });
-
   let {
     chatId,
     appId,
@@ -114,6 +108,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     stream = false,
     detail = false,
+    retainDatasetCite = false,
     messages = [],
     variables = {},
     responseChatItemId = getNanoid(),
@@ -193,6 +188,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         chatId
       });
     })();
+    retainDatasetCite = retainDatasetCite && !!responseDetail;
     const isPlugin = app.type === AppTypeEnum.plugin;
 
     // Check message type
@@ -266,42 +262,44 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     });
 
     /* start flow controller */
-    const { flowResponses, flowUsages, assistantResponses, newVariables } = await (async () => {
-      if (app.version === 'v2') {
-        return dispatchWorkFlow({
-          res,
-          requestOrigin: req.headers.origin,
-          mode: 'chat',
-          timezone,
-          externalProvider,
+    const { flowResponses, flowUsages, assistantResponses, newVariables, durationSeconds } =
+      await (async () => {
+        if (app.version === 'v2') {
+          return dispatchWorkFlow({
+            res,
+            requestOrigin: req.headers.origin,
+            mode: 'chat',
+            timezone,
+            externalProvider,
 
-          runningAppInfo: {
-            id: String(app._id),
-            teamId: String(app.teamId),
-            tmbId: String(app.tmbId)
-          },
-          runningUserInfo: {
-            teamId,
-            tmbId
-          },
-          uid: String(outLinkUserId || tmbId),
+            runningAppInfo: {
+              id: String(app._id),
+              teamId: String(app.teamId),
+              tmbId: String(app.tmbId)
+            },
+            runningUserInfo: {
+              teamId,
+              tmbId
+            },
+            uid: String(outLinkUserId || tmbId),
 
-          chatId,
-          responseChatItemId,
-          runtimeNodes,
-          runtimeEdges: storeEdges2RuntimeEdges(edges, interactive),
-          variables,
-          query: removeEmptyUserInput(userQuestion.value),
-          lastInteractive: interactive,
-          chatConfig,
-          histories: newHistories,
-          stream,
-          maxRunTimes: WORKFLOW_MAX_RUN_TIMES,
-          workflowStreamResponse: workflowResponseWrite
-        });
-      }
-      return Promise.reject('您的工作流版本过低，请重新发布一次');
-    })();
+            chatId,
+            responseChatItemId,
+            runtimeNodes,
+            runtimeEdges: storeEdges2RuntimeEdges(edges, interactive),
+            variables,
+            query: removeEmptyUserInput(userQuestion.value),
+            lastInteractive: interactive,
+            chatConfig,
+            histories: newHistories,
+            stream,
+            retainDatasetCite,
+            maxRunTimes: WORKFLOW_MAX_RUN_TIMES,
+            workflowStreamResponse: workflowResponseWrite
+          });
+        }
+        return Promise.reject('您的工作流版本过低，请重新发布一次');
+      })();
 
     // save chat
     const isOwnerUse = !shareId && !spaceTeamId && String(tmbId) === String(app.tmbId);
@@ -339,7 +337,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         appId: app._id,
         userInteractiveVal,
         aiResponse,
-        newVariables
+        newVariables,
+        durationSeconds
       });
     } else {
       await saveChat({
@@ -360,7 +359,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         metadata: {
           originIp,
           ...metadata
-        }
+        },
+        durationSeconds
       });
     }
 
@@ -408,17 +408,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
         return assistantResponses;
       })();
+      const formatResponseContent = removeAIResponseCite(responseContent, retainDatasetCite);
       const error = flowResponses[flowResponses.length - 1]?.error;
 
       res.json({
         ...(detail ? { responseData: feResponseData, newVariables } : {}),
         error,
-        id: chatId || '',
+        id: saveChatId,
         model: '',
         usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 1 },
         choices: [
           {
-            message: { role: 'assistant', content: responseContent },
+            message: { role: 'assistant', content: formatResponseContent },
             finish_reason: 'stop',
             index: 0
           }

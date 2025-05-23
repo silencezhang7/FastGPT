@@ -1,6 +1,6 @@
 import { connectionMongo, getMongoModel } from '../../common/mongo';
 const { Schema } = connectionMongo;
-import { ChatSchema as ChatType } from '@fastgpt/global/core/chat/type.d';
+import { type ChatSchema as ChatType } from '@fastgpt/global/core/chat/type.d';
 import { ChatSourceEnum, ChatSourceMap } from '@fastgpt/global/core/chat/constants';
 import {
   TeamCollectionName,
@@ -33,6 +33,10 @@ const ChatSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: AppCollectionName,
     required: true
+  },
+  createTime: {
+    type: Date,
+    default: () => new Date()
   },
   updateTime: {
     type: Date,

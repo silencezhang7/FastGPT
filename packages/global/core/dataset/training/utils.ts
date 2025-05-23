@@ -1,4 +1,4 @@
-import { EmbeddingModelItemType, LLMModelItemType } from '../../../core/ai/model.d';
+import { type EmbeddingModelItemType, type LLMModelItemType } from '../../../core/ai/model.d';
 import {
   ChunkSettingModeEnum,
   DataChunkSplitModeEnum,
@@ -8,7 +8,7 @@ import {
 export const minChunkSize = 64; // min index and chunk size
 
 // Chunk size
-export const chunkAutoChunkSize = 1500;
+export const chunkAutoChunkSize = 1000;
 export const getMaxChunkSize = (model: LLMModelItemType) => {
   return Math.max(model.maxContext - model.maxResponse, 2000);
 };
@@ -118,7 +118,7 @@ export const computeChunkSize = (params: {
     return getLLMMaxChunkSize(params.llmModel);
   }
 
-  return Math.min(params.chunkSize || chunkAutoChunkSize, getLLMMaxChunkSize(params.llmModel));
+  return Math.min(params.chunkSize ?? chunkAutoChunkSize, getLLMMaxChunkSize(params.llmModel));
 };
 
 export const computeChunkSplitter = (params: {

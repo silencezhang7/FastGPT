@@ -1,11 +1,12 @@
-import { PushTrackCommonType } from '@fastgpt/global/common/middle/tracks/type';
+import { type PushTrackCommonType } from '@fastgpt/global/common/middle/tracks/type';
 import { TrackModel } from './schema';
 import { TrackEnum } from '@fastgpt/global/common/middle/tracks/constants';
 import { addLog } from '../../system/log';
-import { OAuthEnum } from '@fastgpt/global/support/user/constant';
-import { AppTypeEnum } from '@fastgpt/global/core/app/constants';
-import { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constants';
+import type { OAuthEnum } from '@fastgpt/global/support/user/constant';
+import type { AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import type { DatasetTypeEnum } from '@fastgpt/global/core/dataset/constants';
 import { getAppLatestVersion } from '../../../core/app/version/controller';
+import { type ShortUrlParams } from '@fastgpt/global/support/marketing/type';
 
 const createTrack = ({ event, data }: { event: TrackEnum; data: Record<string, any> }) => {
   if (!global.feConfigs?.isPlus) return;
@@ -31,7 +32,13 @@ export const pushTrack = {
       data
     });
   },
-  createApp: (data: PushTrackCommonType & { type: AppTypeEnum }) => {
+  createApp: (
+    data: PushTrackCommonType &
+      ShortUrlParams & {
+        type: AppTypeEnum;
+        appId: string;
+      }
+  ) => {
     return createTrack({
       event: TrackEnum.createApp,
       data

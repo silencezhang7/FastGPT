@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { Box, Button, Card, Flex } from '@chakra-ui/react';
 import { useTranslation } from 'next-i18next';
 import MyIcon from '@fastgpt/web/components/common/Icon';
-import { useConfirm } from '@fastgpt/web/hooks/useConfirm';
 import { useContextSelector } from 'use-context-selector';
 import { WorkflowContext } from '../../../../context';
 import EmptyTip from '@fastgpt/web/components/common/EmptyTip';
@@ -12,13 +11,15 @@ import {
   FormInputComponent,
   SelectOptionsComponent
 } from '@/components/core/chat/components/Interactive/InteractiveComponents';
-import { UserInputInteractive } from '@fastgpt/global/core/workflow/template/system/interactive/type';
+import { type UserInputInteractive } from '@fastgpt/global/core/workflow/template/system/interactive/type';
 import {
   getLastInteractiveValue,
   storeEdges2RuntimeEdges
 } from '@fastgpt/global/core/workflow/runtime/utils';
-import { ChatItemType, UserChatItemValueItemType } from '@fastgpt/global/core/chat/type';
+import { type ChatItemType, type UserChatItemValueItemType } from '@fastgpt/global/core/chat/type';
 import { ChatItemValueTypeEnum, ChatRoleEnum } from '@fastgpt/global/core/chat/constants';
+import PopoverConfirm from '@fastgpt/web/components/common/MyPopover/PopoverConfirm';
+import MyIconButton from '@fastgpt/web/components/common/Icon/button';
 
 type NodeDebugResponseProps = {
   nodeId: string;
@@ -55,7 +56,7 @@ const RenderUserFormInteractive = React.memo(function RenderFormInput({
               })()
             }
           >
-            {t('common:common.Next Step')}
+            {t('common:next_step')}
           </Button>
         )}
       />
@@ -96,13 +97,6 @@ const NodeDebugResponse = ({ nodeId, debugResult }: NodeDebugResponseProps) => {
   const statusData = statusMap.current[debugResult?.status || 'running'];
 
   const response = debugResult?.response;
-
-  const { openConfirm, ConfirmModal } = useConfirm({
-    content: t('common:core.workflow.Confirm stop debug')
-  });
-  const onStop = () => {
-    openConfirm(onStopNodeDebug)();
-  };
 
   const interactive = debugResult?.workflowInteractiveResponse;
   const onNextInteractive = useCallback(
@@ -196,14 +190,20 @@ const NodeDebugResponse = ({ nodeId, debugResult }: NodeDebugResponseProps) => {
               {t('common:core.workflow.debug.Run result')}
             </Box>
             {workflowDebugData?.nextRunNodes.length !== 0 && (
-              <Button
-                size={'sm'}
-                leftIcon={<MyIcon name={'core/chat/stopSpeech'} w={'16px'} />}
-                variant={'whiteDanger'}
-                onClick={onStop}
-              >
-                {t('common:core.workflow.Stop debug')}
-              </Button>
+              <PopoverConfirm
+                Trigger={
+                  <Button
+                    size={'sm'}
+                    leftIcon={<MyIcon name={'core/chat/stopSpeech'} w={'16px'} />}
+                    variant={'whiteDanger'}
+                  >
+                    {t('common:core.workflow.Stop debug')}
+                  </Button>
+                }
+                placement={'top'}
+                content={t('common:core.workflow.Confirm stop debug')}
+                onConfirm={onStopNodeDebug}
+              />
             )}
             {!interactive && (
               <>
@@ -218,7 +218,7 @@ const NodeDebugResponse = ({ nodeId, debugResult }: NodeDebugResponseProps) => {
                       variant={'primary'}
                       onClick={() => onNextNodeDebug(workflowDebugData)}
                     >
-                      {t('common:common.Next Step')}
+                      {t('common:next_step')}
                     </Button>
                   )}
                 {workflowDebugData?.nextRunNodes &&
@@ -266,7 +266,6 @@ const NodeDebugResponse = ({ nodeId, debugResult }: NodeDebugResponseProps) => {
           )}
         </Card>
       )}
-      <ConfirmModal />
     </>
   ) : null;
 };

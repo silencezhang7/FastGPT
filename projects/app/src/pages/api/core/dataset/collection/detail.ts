@@ -8,12 +8,11 @@ import { getFileById } from '@fastgpt/service/common/file/gridfs/controller';
 import { getCollectionSourceData } from '@fastgpt/global/core/dataset/collection/utils';
 import { NextAPI } from '@/service/middleware/entry';
 import { ReadPermissionVal } from '@fastgpt/global/support/permission/constant';
-import { DatasetCollectionItemType } from '@fastgpt/global/core/dataset/type';
+import { type DatasetCollectionItemType } from '@fastgpt/global/core/dataset/type';
 import { CommonErrEnum } from '@fastgpt/global/common/error/code/common';
 import { collectionTagsToTagLabel } from '@fastgpt/service/core/dataset/collection/utils';
-import { getVectorCountByCollectionId } from '@fastgpt/service/common/vectorStore/controller';
+import { getVectorCountByCollectionId } from '@fastgpt/service/common/vectorDB/controller';
 import { MongoDatasetTraining } from '@fastgpt/service/core/dataset/training/schema';
-import { Types } from 'mongoose';
 import { readFromSecondary } from '@fastgpt/service/common/mongo/utils';
 
 async function handler(req: NextApiRequest): Promise<DatasetCollectionItemType> {

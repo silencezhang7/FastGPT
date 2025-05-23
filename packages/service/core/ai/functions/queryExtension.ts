@@ -1,10 +1,10 @@
 import { replaceVariable } from '@fastgpt/global/common/string/tools';
 import { createChatCompletion } from '../config';
-import { ChatItemType } from '@fastgpt/global/core/chat/type';
+import { type ChatItemType } from '@fastgpt/global/core/chat/type';
 import { countGptMessagesTokens, countPromptTokens } from '../../../common/string/tiktoken/index';
 import { chats2GPTMessages } from '@fastgpt/global/core/chat/adapt';
 import { getLLMModel } from '../model';
-import { llmCompletionsBodyFormat } from '../utils';
+import { llmCompletionsBodyFormat, formatLLMResponse } from '../utils';
 import { addLog } from '../../../common/system/log';
 import { filterGPTMessageByMaxContext } from '../../chat/utils';
 import json5 from 'json5';
@@ -167,10 +167,10 @@ assistant: ${chatBg}
     }
   ] as any;
 
-  const { response: result } = await createChatCompletion({
+  const { response } = await createChatCompletion({
     body: llmCompletionsBodyFormat(
       {
-        stream: false,
+        stream: true,
         model: modelData.model,
         temperature: 0.1,
         messages
@@ -178,15 +178,17 @@ assistant: ${chatBg}
       modelData
     )
   });
+  const { text: answer, usage } = await formatLLMResponse(response);
+  const inputTokens = usage?.prompt_tokens || (await countGptMessagesTokens(messages));
+  const outputTokens = usage?.completion_tokens || (await countPromptTokens(answer));
 
-  let answer = result.choices?.[0]?.message?.content || '';
   if (!answer) {
     return {
       rawQuery: query,
       extensionQueries: [],
       model,
-      inputTokens: 0,
-      outputTokens: 0
+      inputTokens: inputTokens,
+      outputTokens: outputTokens
     };
   }
 
@@ -200,8 +202,8 @@ assistant: ${chatBg}
       rawQuery: query,
       extensionQueries: [],
       model,
-      inputTokens: 0,
-      outputTokens: 0
+      inputTokens: inputTokens,
+      outputTokens: outputTokens
     };
   }
 
@@ -218,8 +220,8 @@ assistant: ${chatBg}
       rawQuery: query,
       extensionQueries: (Array.isArray(queries) ? queries : []).slice(0, 5),
       model,
-      inputTokens: await countGptMessagesTokens(messages),
-      outputTokens: await countPromptTokens(answer)
+      inputTokens,
+      outputTokens
     };
   } catch (error) {
     addLog.warn('Query extension failed, not a valid JSON', {
@@ -229,8 +231,8 @@ assistant: ${chatBg}
       rawQuery: query,
       extensionQueries: [],
       model,
-      inputTokens: 0,
-      outputTokens: 0
+      inputTokens,
+      outputTokens
     };
   }
 };

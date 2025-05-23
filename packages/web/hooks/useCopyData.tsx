@@ -1,8 +1,6 @@
 import { useTranslation } from 'next-i18next';
 import { useToast } from './useToast';
 import { useCallback } from 'react';
-import { hasHttps } from '../common/system/utils';
-import { isProduction } from '@fastgpt/global/common/system/constants';
 import MyModal from '../components/common/MyModal';
 import React from 'react';
 import { Box, ModalBody } from '@chakra-ui/react';
@@ -20,13 +18,13 @@ export const useCopyData = () => {
   const copyData = useCallback(
     async (
       data: string,
-      title: string | null | undefined = t('common:common.Copy Successful'),
+      title: string | null | undefined = t('common:copy_successful'),
       duration = 1000
     ) => {
       data = data.trim();
 
       try {
-        if ((hasHttps() || !isProduction) && navigator.clipboard) {
+        if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(data);
           if (title) {
             toast({
@@ -36,13 +34,35 @@ export const useCopyData = () => {
             });
           }
         } else {
-          throw new Error('');
+          let textArea = document.createElement('textarea');
+          textArea.value = data;
+          // 使text area不在viewport，同时设置不可见
+          textArea.style.position = 'absolute';
+          // @ts-ignore
+          textArea.style.opacity = 0;
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          await new Promise((res, rej) => {
+            document.execCommand('copy') ? res('') : rej();
+            textArea.remove();
+          }).then(() => {
+            if (title) {
+              toast({
+                title,
+                status: 'success',
+                duration
+              });
+            }
+          });
         }
       } catch (error) {
         setCopyContent(data);
       }
     },
-    [t, toast]
+    [setCopyContent, t, toast]
   );
 
   return {
@@ -59,7 +79,7 @@ export const ManualCopyModal = () => {
       isOpen={!!copyContent}
       iconSrc="copy"
       iconColor="primary.600"
-      title={t('common:common.Copy')}
+      title={t('common:Copy')}
       maxW={['90vw', '500px']}
       w={'100%'}
       onClose={() => setCopyContent(undefined)}

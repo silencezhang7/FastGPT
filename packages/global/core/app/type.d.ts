@@ -1,30 +1,20 @@
 import type { FlowNodeTemplateType, StoreNodeItemType } from '../workflow/type/node';
-import { AppTypeEnum } from './constants';
+import type { AppTypeEnum } from './constants';
 import { PermissionTypeEnum } from '../../support/permission/constant';
-import {
+import type {
   NodeInputKeyEnum,
   VariableInputEnum,
   WorkflowIOValueTypeEnum
 } from '../workflow/constants';
-import { SelectedDatasetType } from '../workflow/api';
-import { DatasetSearchModeEnum } from '../dataset/constants';
+import type { SelectedDatasetType } from '../workflow/api';
+import type { DatasetSearchModeEnum } from '../dataset/constants';
 import { TeamTagSchema as TeamTagsSchemaType } from '@fastgpt/global/support/user/team/type.d';
-import { StoreEdgeItemType } from '../workflow/type/edge';
-import { AppPermission } from '../../support/permission/app/controller';
-import { ParentIdType } from '../../common/parentFolder/type';
+import type { StoreEdgeItemType } from '../workflow/type/edge';
+import type { AppPermission } from '../../support/permission/app/controller';
+import type { ParentIdType } from '../../common/parentFolder/type';
 import { FlowNodeInputTypeEnum } from '../../core/workflow/node/constant';
-import { WorkflowTemplateBasicType } from '@fastgpt/global/core/workflow/type';
-import { SourceMemberType } from '../../support/user/type';
-
-export type ToolType = {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: string;
-    properties?: Record<string, { type: string; description?: string }>;
-    required?: string[];
-  };
-};
+import type { WorkflowTemplateBasicType } from '@fastgpt/global/core/workflow/type';
+import type { SourceMemberType } from '../../support/user/type';
 
 export type AppSchema = {
   _id: string;
@@ -115,6 +105,16 @@ export type AppSimpleEditFormType = {
   } & AppDatasetSearchParamsType;
   selectedTools: FlowNodeTemplateType[];
   chatConfig: AppChatConfigType;
+};
+
+export type McpToolConfigType = {
+  name: string;
+  description: string;
+  inputSchema: {
+    type: string;
+    properties?: Record<string, { type: string; description?: string }>;
+    required?: string[];
+  };
 };
 
 /* app chat config type */

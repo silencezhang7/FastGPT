@@ -2,14 +2,15 @@ import { NextAPI } from '@/service/middleware/entry';
 import { CommonErrEnum } from '@fastgpt/global/common/error/code/common';
 import type { ParentIdType } from '@fastgpt/global/common/parentFolder/type';
 import { parseParentIdInMongo } from '@fastgpt/global/common/parentFolder/utils';
-import { AppFolderTypeList, AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import type { AppTypeEnum } from '@fastgpt/global/core/app/constants';
+import { AppFolderTypeList } from '@fastgpt/global/core/app/constants';
 import type { AppSchema } from '@fastgpt/global/core/app/type';
-import { defaultNodeVersion } from '@fastgpt/global/core/workflow/node/constant';
+import { type ShortUrlParams } from '@fastgpt/global/support/marketing/type';
 import { WritePermissionVal } from '@fastgpt/global/support/permission/constant';
 import { TeamAppCreatePermissionVal } from '@fastgpt/global/support/permission/user/constant';
 import { refreshSourceAvatar } from '@fastgpt/service/common/file/image/controller';
 import { pushTrack } from '@fastgpt/service/common/middle/tracks/utils';
-import { ClientSession } from '@fastgpt/service/common/mongo';
+import { type ClientSession } from '@fastgpt/service/common/mongo';
 import { mongoSessionRun } from '@fastgpt/service/common/mongo/sessionRun';
 import { MongoApp } from '@fastgpt/service/core/app/schema';
 import { MongoAppVersion } from '@fastgpt/service/core/app/version/schema';
@@ -17,7 +18,7 @@ import { authApp } from '@fastgpt/service/support/permission/app/auth';
 import { checkTeamAppLimit } from '@fastgpt/service/support/permission/teamLimit';
 import { authUserPer } from '@fastgpt/service/support/permission/user/auth';
 import { MongoTeamMember } from '@fastgpt/service/support/user/team/teamMemberSchema';
-import { ApiRequestProps } from '@fastgpt/service/type/next';
+import { type ApiRequestProps } from '@fastgpt/service/type/next';
 
 export type CreateAppBody = {
   parentId?: ParentIdType;
@@ -27,10 +28,11 @@ export type CreateAppBody = {
   modules: AppSchema['modules'];
   edges?: AppSchema['edges'];
   chatConfig?: AppSchema['chatConfig'];
+  utmParams?: ShortUrlParams;
 };
 
 async function handler(req: ApiRequestProps<CreateAppBody>) {
-  const { parentId, name, avatar, type, modules, edges, chatConfig } = req.body;
+  const { parentId, name, avatar, type, modules, edges, chatConfig, utmParams } = req.body;
 
   if (!name || !type || !Array.isArray(modules)) {
     return Promise.reject(CommonErrEnum.inheritPermissionError);
@@ -66,7 +68,9 @@ async function handler(req: ApiRequestProps<CreateAppBody>) {
     type,
     uid: userId,
     teamId,
-    tmbId
+    tmbId,
+    appId,
+    ...utmParams
   });
 
   return appId;
@@ -120,8 +124,7 @@ export const onCreateApp = async ({
           chatConfig,
           type,
           version: 'v2',
-          pluginData,
-          'pluginData.nodeVersion': defaultNodeVersion
+          pluginData
         }
       ],
       { session, ordered: true }

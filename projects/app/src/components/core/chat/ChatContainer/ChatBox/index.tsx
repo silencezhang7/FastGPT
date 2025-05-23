@@ -35,7 +35,7 @@ import type { ChatBoxInputType, ChatBoxInputFormType, SendPromptFnType } from '.
 import type { StartChatFnProps, generatingMessageProps } from '../type';
 import ChatInput from './Input/ChatInput';
 import ChatBoxDivider from '../../Divider';
-import { OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
+import { type OutLinkChatAuthProps } from '@fastgpt/global/support/permission/chat';
 import { getNanoid } from '@fastgpt/global/common/string/tools';
 import {
   ChatItemValueTypeEnum,
@@ -49,7 +49,7 @@ import {
 } from './utils';
 import { textareaMinH } from './constants';
 import { SseResponseEventEnum } from '@fastgpt/global/core/workflow/runtime/constants';
-import ChatProvider, { ChatBoxContext, ChatProviderProps } from './Provider';
+import ChatProvider, { ChatBoxContext, type ChatProviderProps } from './Provider';
 
 import ChatItem from './components/ChatItem';
 
@@ -68,7 +68,6 @@ import MyBox from '@fastgpt/web/components/common/MyBox';
 import { VariableInputEnum } from '@fastgpt/global/core/workflow/constants';
 import { valueTypeFormat } from '@fastgpt/global/core/workflow/runtime/utils';
 
-const ResponseTags = dynamic(() => import('./components/ResponseTags'));
 const FeedbackModal = dynamic(() => import('./components/FeedbackModal'));
 const ReadFeedbackModal = dynamic(() => import('./components/ReadFeedbackModal'));
 const SelectMarkCollection = dynamic(() => import('./components/SelectMarkCollection'));
@@ -221,7 +220,8 @@ const ChatBox = ({
       interactive,
       autoTTSResponse,
       variables,
-      nodeResponse
+      nodeResponse,
+      durationSeconds
     }: generatingMessageProps & { autoTTSResponse?: boolean }) => {
       setChatRecords((state) =>
         state.map((item, index) => {
@@ -341,6 +341,13 @@ const ChatBox = ({
             return {
               ...item,
               value: item.value.concat(val)
+            };
+          } else if (event === SseResponseEventEnum.workflowDuration && durationSeconds) {
+            return {
+              ...item,
+              durationSeconds: item.durationSeconds
+                ? +(item.durationSeconds + durationSeconds).toFixed(2)
+                : durationSeconds
             };
           }
 
@@ -546,7 +553,7 @@ const ChatBox = ({
                 const responseData = mergeChatResponseData(item.responseData || []);
                 if (responseData[responseData.length - 1]?.error) {
                   toast({
-                    title: t(responseData[responseData.length - 1].error?.message),
+                    title: t(getErrText(responseData[responseData.length - 1].error)),
                     status: 'error'
                   });
                 }
@@ -833,7 +840,7 @@ const ChatBox = ({
 
     return {
       status: chatContent.status || ChatStatusEnum.loading,
-      name: t(chatContent.moduleName || ('' as any)) || t('common:common.Loading')
+      name: t(chatContent.moduleName || ('' as any)) || t('common:Loading')
     };
   }, [chatRecords, isChatting, t]);
 
@@ -1006,10 +1013,6 @@ const ChatBox = ({
                         onReadUserDislike: onReadUserDislike(item)
                       }}
                     >
-                      <ResponseTags
-                        showTags={index !== chatRecords.length - 1 || !isChatting}
-                        historyItem={item}
-                      />
                       {/* custom feedback */}
                       {item.customFeedbacks && item.customFeedbacks.length > 0 && (
                         <Box>
@@ -1064,7 +1067,6 @@ const ChatBox = ({
     chatType,
     delOneMessage,
     externalVariableList?.length,
-    isChatting,
     onAddUserDislike,
     onAddUserLike,
     onCloseCustomFeedback,

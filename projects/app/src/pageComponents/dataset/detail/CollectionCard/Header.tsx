@@ -36,6 +36,7 @@ import MyTag from '@fastgpt/web/components/common/Tag/index';
 import QuestionTip from '@fastgpt/web/components/common/MyTooltip/QuestionTip';
 
 const FileSourceSelector = dynamic(() => import('../Import/components/FileSourceSelector'));
+const BackupImportModal = dynamic(() => import('./BackupImportModal'));
 
 const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
   const { t } = useTranslation();
@@ -76,6 +77,12 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
     onOpen: onOpenFileSourceSelector,
     onClose: onCloseFileSourceSelector
   } = useDisclosure();
+  // Backup import modal
+  const {
+    isOpen: isOpenBackupImportModal,
+    onOpen: onOpenBackupImportModal,
+    onClose: onCloseBackupImportModal
+  } = useDisclosure();
 
   const { runAsync: onCreateCollection } = useRequest2(
     async ({ name, type }: { name: string; type: DatasetCollectionTypeEnum }) => {
@@ -91,8 +98,8 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
       onSuccess() {
         getData(pageNum);
       },
-      successToast: t('common:common.Create Success'),
-      errorToast: t('common:common.Create Failed')
+      successToast: t('common:create_success'),
+      errorToast: t('common:create_failed')
     }
   );
 
@@ -155,7 +162,7 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
             flex={1}
             size={'sm'}
             h={'36px'}
-            placeholder={t('common:common.Search') || ''}
+            placeholder={t('common:Search') || ''}
             value={searchText}
             leftIcon={
               <MyIcon
@@ -220,11 +227,11 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
                     {
                       label: (
                         <Flex>
-                          <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
-                          {t('common:Folder')}
+                          <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
+                          {t('common:core.dataset.Text collection')}
                         </Flex>
                       ),
-                      onClick: () => setEditFolderData({})
+                      onClick: onOpenFileSourceSelector
                     },
                     {
                       label: (
@@ -244,27 +251,24 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
                     {
                       label: (
                         <Flex>
-                          <MyIcon name={'core/dataset/fileCollection'} mr={2} w={'20px'} />
-                          {t('common:core.dataset.Text collection')}
+                          <MyIcon name={'backup'} mr={2} w={'20px'} />
+                          {t('dataset:backup_dataset')}
                         </Flex>
                       ),
-                      onClick: onOpenFileSourceSelector
-                    },
+                      onClick: onOpenBackupImportModal
+                    }
+                  ]
+                },
+                {
+                  children: [
                     {
                       label: (
                         <Flex>
-                          <MyIcon name={'core/dataset/tableCollection'} mr={2} w={'20px'} />
-                          {t('common:core.dataset.Table collection')}
+                          <MyIcon name={'common/folderFill'} w={'20px'} mr={2} />
+                          {t('common:Folder')}
                         </Flex>
                       ),
-                      onClick: () =>
-                        router.replace({
-                          query: {
-                            ...router.query,
-                            currentTab: TabEnum.import,
-                            source: ImportDataSourceEnum.csvTable
-                          }
-                        })
+                      onClick: () => setEditFolderData({})
                     }
                   ]
                 }
@@ -471,6 +475,14 @@ const Header = ({ hasTrainingData }: { hasTrainingData: boolean }) => {
       )}
       <EditCreateVirtualFileModal iconSrc={'modal/manualDataset'} closeBtnText={''} />
       {isOpenFileSourceSelector && <FileSourceSelector onClose={onCloseFileSourceSelector} />}
+      {isOpenBackupImportModal && (
+        <BackupImportModal
+          onFinish={() => {
+            getData(1);
+          }}
+          onClose={onCloseBackupImportModal}
+        />
+      )}
     </MyBox>
   );
 };

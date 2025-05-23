@@ -5,14 +5,17 @@ import {
 } from '@fastgpt/global/core/dataset/constants';
 import type { CreateDatasetCollectionParams } from '@fastgpt/global/core/dataset/api.d';
 import { MongoDatasetCollection } from './schema';
-import { DatasetCollectionSchemaType, DatasetSchemaType } from '@fastgpt/global/core/dataset/type';
+import {
+  type DatasetCollectionSchemaType,
+  type DatasetSchemaType
+} from '@fastgpt/global/core/dataset/type';
 import { MongoDatasetTraining } from '../training/schema';
 import { MongoDatasetData } from '../data/schema';
 import { delImgByRelatedId } from '../../../common/file/image/controller';
-import { deleteDatasetDataVector } from '../../../common/vectorStore/controller';
+import { deleteDatasetDataVector } from '../../../common/vectorDB/controller';
 import { delFileByFileIdList } from '../../../common/file/gridfs/controller';
 import { BucketNameEnum } from '@fastgpt/global/common/file/constants';
-import { ClientSession } from '../../../common/mongo';
+import { type ClientSession } from '../../../common/mongo';
 import { createOrGetCollectionTags } from './utils';
 import { rawText2Chunks } from '../read';
 import { checkDatasetLimit } from '../../../support/permission/teamLimit';
@@ -33,13 +36,14 @@ import {
   computeChunkSplitter,
   getLLMMaxChunkSize
 } from '@fastgpt/global/core/dataset/training/utils';
+import { DatasetDataIndexTypeEnum } from '@fastgpt/global/core/dataset/data/constants';
 
 export const createCollectionAndInsertData = async ({
   dataset,
   rawText,
   relatedId,
   createCollectionParams,
-  isQAImport = false,
+  backupParse = false,
   billId,
   session
 }: {
@@ -47,8 +51,8 @@ export const createCollectionAndInsertData = async ({
   rawText: string;
   relatedId?: string;
   createCollectionParams: CreateOneCollectionParams;
+  backupParse?: boolean;
 
-  isQAImport?: boolean;
   billId?: string;
   session?: ClientSession;
 }) => {
@@ -70,6 +74,15 @@ export const createCollectionAndInsertData = async ({
     llmModel: getLLMModel(dataset.agentModel)
   });
   const chunkSplitter = computeChunkSplitter(createCollectionParams);
+  if (trainingType === DatasetCollectionDataProcessModeEnum.qa) {
+    delete createCollectionParams.chunkTriggerType;
+    delete createCollectionParams.chunkTriggerMinSize;
+    delete createCollectionParams.dataEnhanceCollectionName;
+    delete createCollectionParams.imageIndex;
+    delete createCollectionParams.autoIndexes;
+    delete createCollectionParams.indexSize;
+    delete createCollectionParams.qaPrompt;
+  }
 
   // 1. split chunks
   const chunks = rawText2Chunks({
@@ -78,7 +91,7 @@ export const createCollectionAndInsertData = async ({
     maxSize: getLLMMaxChunkSize(getLLMModel(dataset.agentModel)),
     overlapRatio: trainingType === DatasetCollectionDataProcessModeEnum.chunk ? 0.2 : 0,
     customReg: chunkSplitter ? [chunkSplitter] : [],
-    isQAImport
+    backupParse
   });
 
   // 2. auth limit
@@ -154,6 +167,10 @@ export const createCollectionAndInsertData = async ({
       billId: traingBillId,
       data: chunks.map((item, index) => ({
         ...item,
+        indexes: item.indexes?.map((text) => ({
+          type: DatasetDataIndexTypeEnum.custom,
+          text
+        })),
         chunkIndex: index
       })),
       session
