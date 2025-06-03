@@ -34,6 +34,7 @@ import { getTrainingModeByCollection } from './utils';
 import {
   computeChunkSize,
   computeChunkSplitter,
+  computeParagraphChunkDeep,
   getLLMMaxChunkSize
 } from '@fastgpt/global/core/dataset/training/utils';
 import { DatasetDataIndexTypeEnum } from '@fastgpt/global/core/dataset/data/constants';
@@ -74,7 +75,12 @@ export const createCollectionAndInsertData = async ({
     llmModel: getLLMModel(dataset.agentModel)
   });
   const chunkSplitter = computeChunkSplitter(createCollectionParams);
-  if (trainingType === DatasetCollectionDataProcessModeEnum.qa) {
+  const paragraphChunkDeep = computeParagraphChunkDeep(createCollectionParams);
+
+  if (
+    trainingType === DatasetCollectionDataProcessModeEnum.qa ||
+    trainingType === DatasetCollectionDataProcessModeEnum.backup
+  ) {
     delete createCollectionParams.chunkTriggerType;
     delete createCollectionParams.chunkTriggerMinSize;
     delete createCollectionParams.dataEnhanceCollectionName;
@@ -87,7 +93,11 @@ export const createCollectionAndInsertData = async ({
   // 1. split chunks
   const chunks = rawText2Chunks({
     rawText,
+    chunkTriggerType: createCollectionParams.chunkTriggerType,
+    chunkTriggerMinSize: createCollectionParams.chunkTriggerMinSize,
     chunkSize,
+    paragraphChunkDeep,
+    paragraphChunkMinSize: createCollectionParams.paragraphChunkMinSize,
     maxSize: getLLMMaxChunkSize(getLLMModel(dataset.agentModel)),
     overlapRatio: trainingType === DatasetCollectionDataProcessModeEnum.chunk ? 0.2 : 0,
     customReg: chunkSplitter ? [chunkSplitter] : [],
@@ -112,6 +122,7 @@ export const createCollectionAndInsertData = async ({
     const { _id: collectionId } = await createOneCollection({
       ...createCollectionParams,
       trainingType,
+      paragraphChunkDeep,
       chunkSize,
       chunkSplitter,
 
@@ -212,46 +223,19 @@ export type CreateOneCollectionParams = CreateDatasetCollectionParams & {
   tmbId: string;
   session?: ClientSession;
 };
-export async function createOneCollection({
-  teamId,
-  tmbId,
-  name,
-  parentId,
-  datasetId,
-  type,
+export async function createOneCollection({ session, ...props }: CreateOneCollectionParams) {
+  const {
+    teamId,
+    parentId,
+    datasetId,
+    tags,
 
-  createTime,
-  updateTime,
-
-  hashRawText,
-  rawTextLength,
-  metadata = {},
-  tags,
-
-  nextSyncTime,
-
-  fileId,
-  rawLink,
-  externalFileId,
-  externalFileUrl,
-  apiFileId,
-
-  // Parse settings
-  customPdfParse,
-  imageIndex,
-  autoIndexes,
-
-  // Chunk settings
-  trainingType,
-  chunkSettingMode,
-  chunkSplitMode,
-  chunkSize,
-  indexSize,
-  chunkSplitter,
-  qaPrompt,
-
-  session
-}: CreateOneCollectionParams) {
+    fileId,
+    rawLink,
+    externalFileId,
+    externalFileUrl,
+    apiFileId
+  } = props;
   // Create collection tags
   const collectionTags = await createOrGetCollectionTags({ tags, teamId, datasetId, session });
 
@@ -259,41 +243,18 @@ export async function createOneCollection({
   const [collection] = await MongoDatasetCollection.create(
     [
       {
+        ...props,
         teamId,
-        tmbId,
         parentId: parentId || null,
         datasetId,
-        name,
-        type,
 
-        rawTextLength,
-        hashRawText,
         tags: collectionTags,
-        metadata,
-
-        createTime,
-        updateTime,
-        nextSyncTime,
 
         ...(fileId ? { fileId } : {}),
         ...(rawLink ? { rawLink } : {}),
         ...(externalFileId ? { externalFileId } : {}),
         ...(externalFileUrl ? { externalFileUrl } : {}),
-        ...(apiFileId ? { apiFileId } : {}),
-
-        // Parse settings
-        customPdfParse,
-        imageIndex,
-        autoIndexes,
-
-        // Chunk settings
-        trainingType,
-        chunkSettingMode,
-        chunkSplitMode,
-        chunkSize,
-        indexSize,
-        chunkSplitter,
-        qaPrompt
+        ...(apiFileId ? { apiFileId } : {})
       }
     ],
     { session, ordered: true }

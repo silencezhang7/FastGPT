@@ -230,6 +230,7 @@ export const iconPaths = {
   'core/dataset/tableCollection': () => import('./icons/core/dataset/tableCollection.svg'),
   'core/dataset/tag': () => import('./icons/core/dataset/tag.svg'),
   'core/dataset/websiteDataset': () => import('./icons/core/dataset/websiteDataset.svg'),
+  'core/dataset/otherDataset': () => import('./icons/core/dataset/otherDataset.svg'),
   'core/dataset/websiteDatasetColor': () => import('./icons/core/dataset/websiteDatasetColor.svg'),
   'core/dataset/websiteDatasetOutline': () =>
     import('./icons/core/dataset/websiteDatasetOutline.svg'),
@@ -286,6 +287,7 @@ export const iconPaths = {
   'core/workflow/template/aiChat': () => import('./icons/core/workflow/template/aiChat.svg'),
   'core/workflow/template/baseChart': () => import('./icons/core/workflow/template/baseChart.svg'),
   'core/workflow/template/bing': () => import('./icons/core/workflow/template/bing.svg'),
+  'core/workflow/template/bocha': () => import('./icons/core/workflow/template/bocha.svg'),
   'core/workflow/template/codeRun': () => import('./icons/core/workflow/template/codeRun.svg'),
   'core/workflow/template/customFeedback': () =>
     import('./icons/core/workflow/template/customFeedback.svg'),
