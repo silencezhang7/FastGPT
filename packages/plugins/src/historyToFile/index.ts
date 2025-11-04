@@ -1,7 +1,6 @@
 import { ChatItemValueTypeEnum } from '@fastgpt/global/core/chat/constants';
-import axios from 'axios';
-import FormData from 'form-data';
-import { parseStringPromise } from 'xml2js'; // 导入 xml2js
+import * as fs from 'fs';
+import * as path from 'path';
 
 // 定义 ValueItem 类型
 type ValueItem = {
@@ -22,10 +21,8 @@ type Props = {
     value: ValueItem[];
   }>;
   historyCount: number;
-  systemName: string;
-  password: string;
-  envHostUrl: string;
-  fileViewHost: string;
+  fileDomain: string;
+  onlyOfficeUrl: string;
 };
 
 type Response = Promise<{
@@ -54,38 +51,99 @@ const handleError = (
     };
   }
 };
-// 文件上传函数
-const uploadToFileServer = async (
-  markdownContent: string,
-  systemName: string,
-  password: string,
-  envHostUrl: string
-): Promise<string> => {
-  const form = new FormData();
 
-  // 添加 Markdown 内容作为文件
-  form.append('file', markdownContent, { filename: 'markdown.md' }); // 直接传递内容
-  form.append('systemName', systemName); // 根据需要修改
-  form.append('userName', password); // 根据需要修改
+// 获取 public 目录的绝对路径
+const getPublicDir = (): string => {
+  // 从插件目录向上查找到项目根目录的 public 文件夹
+  const currentDir = __dirname;
+  // 插件在 packages/plugins/src/historyToFile，需要向上到 projects/app/public
 
-  const response = await axios.post(envHostUrl + 'upload.do', form, {
-    headers: {
-      ...form.getHeaders()
+  return path.join(currentDir, '../../../../projects/app/public');
+};
+
+// 保存文件到 public 目录
+const saveFileToPublic = async (content: string, filename: string): Promise<string> => {
+  const publicDir = getPublicDir();
+  const filePath = path.join(publicDir, filename);
+
+  // 确保 public 目录存在
+  await fs.promises.mkdir(publicDir, { recursive: true });
+
+  // 写入文件
+  await fs.promises.writeFile(filePath, content, 'utf-8');
+
+  return filename;
+};
+
+// 生成 OnlyOffice 预览 HTML 页面
+const generateOnlyOfficeHtml = (
+  fileUrl: string,
+  filename: string,
+  onlyOfficeUrl: string
+): string => {
+  return `<html lang="zh-CN">
+<head>
+  <title>${filename}</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+  <meta charset="utf-8"/>
+  <!-- onlyoffice服务器地址 -->
+  <script src="${onlyOfficeUrl}"></script>
+  <style>
+    body {
+      padding: 0;
+      margin: 0;
     }
-  });
-  const result = await parseStringPromise(response.data);
-  return result.root.attachment[0].fileid[0]; // 返回 fileId
+  </style>
+</head>
+<body>
+<!-- 占位元素 -->
+<div id="placeholder"></div>
+<script>
+    /**
+     * 详细配置文档：https://api.onlyoffice.com/editors/config/
+     * @param url 要预览的文档地址
+     * @param filename 要预览的文档文件名
+     */
+    function preview(url, filename) {
+        const index = filename.lastIndexOf('.');
+        const fileType = filename.substr(index + 1);
+        const config = {
+            "document": {
+                "permissions": {
+                    comment: false,
+                    fillForms: false,
+                    "edit": false,
+                    "chat": false
+                },
+                "fileType": fileType,
+                "title": filename,
+                "url": url,
+                "lang": "zh-CN"
+            },
+            "width": '100%',
+            "height": '100%',
+            "editorConfig": {
+                mode: 'view',
+                "lang": "zh-CN"
+            }
+        };
+        document.title = filename;
+        const docEditor = new DocsAPI.DocEditor("placeholder", config);
+    }
+
+    // 要预览的文档地址
+    const url = '${fileUrl}';
+    // 要预览的文档文件名
+    const filename = '${filename}';
+    // 调用方法
+    preview(url, filename);
+</script>
+</body>
+</html>`;
 };
 
 // 主函数
-const main = async ({
-  history,
-  historyCount,
-  systemName,
-  password,
-  envHostUrl,
-  fileViewHost
-}: Props): Response => {
+const main = async ({ history, historyCount, fileDomain, onlyOfficeUrl }: Props): Response => {
   try {
     // 计算要提取的记录数量，最多为 history.length
     const numberOfRecords = Math.min(history.length, historyCount);
@@ -113,16 +171,29 @@ const main = async ({
       })
       .join('\n\n-------\n\n'); // 用分隔符连接每个条目
 
-    // 上传 Markdown 内容到文件服务器
-    const fileId = await uploadToFileServer(markdownContent, systemName, password, envHostUrl);
+    const timestamp = Date.now();
+    const mdFilename = `history-${timestamp}.md`;
+    const htmlFilename = `preview-${timestamp}.html`;
 
-    const fileUrl = `${envHostUrl}download.do?fileId=${fileId}&fullfilename=file-${Date.now()}.md`;
+    // 保存 Markdown 文件到 public 目录
+    await saveFileToPublic(markdownContent, mdFilename);
+
+    // 使用页面输入的 fileDomain
+    const fileUrl = `${fileDomain}/${mdFilename}`;
+
+    // 生成 OnlyOffice 预览 HTML 页面
+    const htmlContent = generateOnlyOfficeHtml(fileUrl, mdFilename, onlyOfficeUrl);
+
+    // 保存 HTML 预览页面到 public 目录
+    await saveFileToPublic(htmlContent, htmlFilename);
+
+    const htmlFileUrl = `${fileDomain}/${htmlFilename}`;
 
     return {
       fileUrl: fileUrl,
       markdownContent: markdownContent,
-      fileViewUrl: fileViewHost + btoa(fileUrl),
-      fileId: fileId
+      fileViewUrl: htmlFileUrl,
+      fileId: mdFilename
     };
   } catch (error) {
     return handleError(error);

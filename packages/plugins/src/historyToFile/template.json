@@ -79,10 +79,10 @@
             "selectedTypeIndex": 0,
             "valueType": "string",
             "canEdit": true,
-            "key": "systemName",
-            "label": "systemName",
-            "description": "文件服务器上传文件所需要的系统名称",
-            "defaultValue": "tpaic-ai",
+            "key": "fileDomain",
+            "label": "fileDomain",
+            "description": "文件访问域名",
+            "defaultValue": "http://10.138.93.58:3000",
             "list": [
               {
                 "label": "",
@@ -90,7 +90,7 @@
               }
             ],
             "required": true,
-            "toolDescription": "文件服务器上传文件所需要的系统名称"
+            "toolDescription": "文件访问域名，用于生成文件 URL"
           },
           {
             "renderTypeList": [
@@ -100,10 +100,10 @@
             "selectedTypeIndex": 0,
             "valueType": "string",
             "canEdit": true,
-            "key": "password",
-            "label": "password",
-            "description": "文件服务器上传文件所需要的系统密码",
-            "defaultValue": "tpaic-ai",
+            "key": "onlyOfficeUrl",
+            "label": "onlyOfficeUrl",
+            "description": "OnlyOffice 服务器地址",
+            "defaultValue": "http://10.100.45.68:8025/web-apps/apps/api/documents/api.js",
             "list": [
               {
                 "label": "",
@@ -111,57 +111,7 @@
               }
             ],
             "required": true,
-            "toolDescription": "文件服务器上传文件所需要的系统密码"
-          },
-          {
-            "renderTypeList": [
-              "select",
-              "reference"
-            ],
-            "selectedTypeIndex": 0,
-            "valueType": "string",
-            "canEdit": true,
-            "key": "envHostUrl",
-            "label": "envHostUrl",
-            "description": "不同环境的文件服务器的上传地址",
-            "defaultValue": "https://sits.axa.cn/fileServer/",
-            "list": [
-              {
-                "label": "https://sits.axa.cn/fileServer/",
-                "value": "https://sits.axa.cn/fileServer/"
-              },
-              {
-                "label": "https://uats.axa.cn/fileServer/",
-                "value": "https://uats.axa.cn/fileServer/"
-              },
-              {
-                "label": "https://apps.axa.cn/fileServer/",
-                "value": "https://apps.axa.cn/fileServer/"
-              }
-            ],
-            "required": true,
-            "toolDescription": "不同环境的文件服务器的上传地址"
-          },
-          {
-            "renderTypeList": [
-              "input",
-              "reference"
-            ],
-            "selectedTypeIndex": 0,
-            "valueType": "string",
-            "canEdit": true,
-            "key": "fileViewHost",
-            "label": "fileViewHost",
-            "description": "文件预览域名",
-            "defaultValue": "https://sits.axa.cn/fileviewer/onlinePreview?url=",
-            "list": [
-              {
-                "label": "",
-                "value": ""
-              }
-            ],
-            "required": true,
-            "toolDescription": "文件预览域名"
+            "toolDescription": "OnlyOffice 服务器地址"
           }
         ],
         "outputs": [
@@ -180,31 +130,17 @@
             "type": "hidden"
           },
           {
-            "id": "systemName",
+            "id": "fileDomain",
             "valueType": "string",
-            "key": "systemName",
-            "label": "systemName",
+            "key": "fileDomain",
+            "label": "fileDomain",
             "type": "hidden"
           },
           {
-            "id": "password",
+            "id": "onlyOfficeUrl",
             "valueType": "string",
-            "key": "password",
-            "label": "password",
-            "type": "hidden"
-          },
-          {
-            "id": "envHostUrl",
-            "valueType": "string",
-            "key": "envHostUrl",
-            "label": "envHostUrl",
-            "type": "hidden"
-          },
-          {
-            "id": "fileViewHost",
-            "valueType": "string",
-            "key": "fileViewHost",
-            "label": "fileViewHost",
+            "key": "onlyOfficeUrl",
+            "label": "onlyOfficeUrl",
             "type": "hidden"
           }
         ]
@@ -427,7 +363,7 @@
               "hidden"
             ],
             "valueType": "any",
-            "value": "{\r\n  \"history\":{{history-H}},\r\n  \"historyCount\":{{historyCount-H}},\r\n  \"systemName\":\"{{systemName-H}}\",\r\n  \"password\":\"{{password-H}}\",\r\n  \"envHostUrl\":\"{{envHostUrl-H}}\",\r\n  \"fileViewHost\":\"{{fileViewHost-H}}\"\r\n}",
+            "value": "{\r\n  \"history\":{{history-H}},\r\n  \"historyCount\":{{historyCount-H}},\r\n  \"fileDomain\":\"{{fileDomain-H}}\",\r\n  \"onlyOfficeUrl\":\"{{onlyOfficeUrl-H}}\"\r\n}",
             "label": "",
             "required": false,
             "valueDesc": "",
@@ -537,8 +473,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "systemName-H",
-            "label": "systemName-H",
+            "key": "fileDomain-H",
+            "label": "fileDomain-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -563,7 +499,7 @@
             "required": true,
             "value": [
               "pluginInput",
-              "systemName"
+              "fileDomain"
             ]
           },
           {
@@ -572,8 +508,8 @@
             ],
             "valueType": "string",
             "canEdit": true,
-            "key": "password-H",
-            "label": "password-H",
+            "key": "onlyOfficeUrl-H",
+            "label": "onlyOfficeUrl-H",
             "customInputConfig": {
               "selectValueTypeList": [
                 "string",
@@ -598,77 +534,7 @@
             "required": true,
             "value": [
               "pluginInput",
-              "password"
-            ]
-          },
-          {
-            "renderTypeList": [
-              "reference"
-            ],
-            "valueType": "string",
-            "canEdit": true,
-            "key": "envHostUrl-H",
-            "label": "envHostUrl-H",
-            "customInputConfig": {
-              "selectValueTypeList": [
-                "string",
-                "number",
-                "boolean",
-                "object",
-                "arrayString",
-                "arrayNumber",
-                "arrayBoolean",
-                "arrayObject",
-                "arrayAny",
-                "any",
-                "chatHistory",
-                "datasetQuote",
-                "dynamic",
-                "selectApp",
-                "selectDataset"
-              ],
-              "showDescription": false,
-              "showDefaultValue": true
-            },
-            "required": true,
-            "value": [
-              "pluginInput",
-              "envHostUrl"
-            ]
-          },
-          {
-            "renderTypeList": [
-              "reference"
-            ],
-            "valueType": "string",
-            "canEdit": true,
-            "key": "fileViewHost-H",
-            "label": "fileViewHost-H",
-            "customInputConfig": {
-              "selectValueTypeList": [
-                "string",
-                "number",
-                "boolean",
-                "object",
-                "arrayString",
-                "arrayNumber",
-                "arrayBoolean",
-                "arrayObject",
-                "arrayAny",
-                "any",
-                "chatHistory",
-                "datasetQuote",
-                "dynamic",
-                "selectApp",
-                "selectDataset"
-              ],
-              "showDescription": false,
-              "showDefaultValue": true
-            },
-            "required": true,
-            "value": [
-              "pluginInput",
-              "fileViewHost"
+              "onlyOfficeUrl"
             ]
           }
         ],
