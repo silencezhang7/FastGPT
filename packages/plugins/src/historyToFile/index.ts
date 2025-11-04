@@ -52,22 +52,31 @@ const handleError = (
   }
 };
 
-// 获取 public 目录的绝对路径
-const getPublicDir = (): string => {
-  // 从插件目录向上查找到项目根目录的 public 文件夹
-  const currentDir = __dirname;
-  // 插件在 packages/plugins/src/historyToFile，需要向上到 projects/app/public
+// 获取文件存储目录的绝对路径
+const getFilesDir = (): string => {
+  // 使用 /app/data/files 目录，这个目录在 Docker 中是可写的
+  // 开发环境：使用项目根目录下的 data/files
+  // Docker 环境：使用 /app/data/files
+  const isDocker = process.env.NODE_ENV === 'development';
 
-  return path.join(currentDir, '../../../../projects/app/public');
+  if (!isDocker) {
+    // Docker 环境：/app/data/files
+    return '/app/data/files';
+  } else {
+    // 开发环境：从当前目录向上查找到项目根目录
+    // 插件在 packages/plugins/src/historyToFile
+    const currentDir = __dirname;
+    return path.join(currentDir, '../../../../projects/app/data/files');
+  }
 };
 
-// 保存文件到 public 目录
-const saveFileToPublic = async (content: string, filename: string): Promise<string> => {
-  const publicDir = getPublicDir();
-  const filePath = path.join(publicDir, filename);
+// 保存文件到 data/files 目录
+const saveFile = async (content: string, filename: string): Promise<string> => {
+  const filesDir = getFilesDir();
+  const filePath = path.join(filesDir, filename);
 
-  // 确保 public 目录存在
-  await fs.promises.mkdir(publicDir, { recursive: true });
+  // 确保目录存在
+  await fs.promises.mkdir(filesDir, { recursive: true });
 
   // 写入文件
   await fs.promises.writeFile(filePath, content, 'utf-8');
@@ -175,19 +184,19 @@ const main = async ({ history, historyCount, fileDomain, onlyOfficeUrl }: Props)
     const mdFilename = `history-${timestamp}.md`;
     const htmlFilename = `preview-${timestamp}.html`;
 
-    // 保存 Markdown 文件到 public 目录
-    await saveFileToPublic(markdownContent, mdFilename);
+    // 保存 Markdown 文件到 data/files 目录
+    await saveFile(markdownContent, mdFilename);
 
-    // 使用页面输入的 fileDomain
-    const fileUrl = `${fileDomain}/${mdFilename}`;
+    // 使用页面输入的 fileDomain，文件路径为 /api/plugin/historyFile/{filename}
+    const fileUrl = `${fileDomain}/api/plugin/historyFile/${mdFilename}`;
 
     // 生成 OnlyOffice 预览 HTML 页面
     const htmlContent = generateOnlyOfficeHtml(fileUrl, mdFilename, onlyOfficeUrl);
 
-    // 保存 HTML 预览页面到 public 目录
-    await saveFileToPublic(htmlContent, htmlFilename);
+    // 保存 HTML 预览页面到 data/files 目录
+    await saveFile(htmlContent, htmlFilename);
 
-    const htmlFileUrl = `${fileDomain}/${htmlFilename}`;
+    const htmlFileUrl = `${fileDomain}/api/plugin/historyFile/${htmlFilename}`;
 
     return {
       fileUrl: fileUrl,
